@@ -4,7 +4,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { User, UserRole } from './types';
 import { mockUsers } from './mock-data';
 import { toast } from 'sonner';
-import { signIn, useSession } from 'next-auth/react'
+import { signIn, signOut, useSession } from 'next-auth/react'
 
 interface AuthContextType {
   user: User | null;
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    setUser(null);
+    signOut();
   };
 
   // Función solo para demo - permite cambiar de rol fácilmente
