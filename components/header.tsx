@@ -77,7 +77,8 @@ export function Header() {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={user.imagen || "/placeholder.svg"} alt={user.nombre} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {getInitials(user.nombre, user.apellidos)}
+                    {/* {getInitials(user.nombre, user.apellidos)} */}
+                    EP
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -102,7 +103,7 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              
+
               {/* Opciones de cambio de rol para demo */}
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Cambiar rol (Demo)
@@ -119,7 +120,7 @@ export function Header() {
                 <GraduationCap className="mr-2 h-4 w-4" />
                 Ver como Coordinador
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />

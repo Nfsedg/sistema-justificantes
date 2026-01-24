@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, UserRole } from './types';
 import { mockUsers } from './mock-data';
+import { toast } from 'sonner';
+import { signIn, useSession } from 'next-auth/react'
 
 interface AuthContextType {
   user: User | null;
@@ -19,12 +21,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      setUser(session?.user as User);
+    }
+  }, [session, status]);
 
   const login = async (email: string): Promise<boolean> => {
     setIsLoading(true);
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser) {
       setUser(foundUser);
@@ -36,12 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async () => {
-    setIsLoading(true);
-    // Simular login con Google - en producción usar NextAuth
-    await new Promise(resolve => setTimeout(resolve, 800));
-    // Por defecto, loguear como el primer alumno
-    setUser(mockUsers[0]);
-    setIsLoading(false);
+    setIsLoading(true)
+    try {
+      console.log('Iniciando sesión con Google')
+      await signIn('google')
+    } catch (error) {
+      toast.error('Error al iniciar sesión con Google')
+      console.debug(error)
+      setIsLoading(false)
+    }
   };
 
   const logout = () => {

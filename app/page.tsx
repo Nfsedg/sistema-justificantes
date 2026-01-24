@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/login-form";
 import { Header } from "@/components/header";
 import { DashboardAlumno } from "@/components/dashboard-alumno";
 import { DashboardStaff } from "@/components/dashboard-staff";
+import { SessionProvider } from "next-auth/react";
 
 function AppContent() {
   const { user, isLoading } = useAuth();
@@ -36,8 +37,10 @@ function AppContent() {
 
 export default function Home() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <SessionProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </SessionProvider>
   );
 }
