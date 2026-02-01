@@ -25,8 +25,18 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
+  roleId Int?
+  role   Role? @relation(fields: [roleId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique // COORD, STUDENT, TEACHER
+
+  users User[]
 }
 
 model Account {
