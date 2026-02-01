@@ -1,14 +1,10 @@
 "use client";
 
-import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LoginForm } from "@/components/login-form";
-import { Header } from "@/components/header";
-import { DashboardAlumno } from "@/components/dashboard-alumno";
-import { DashboardStaff } from "@/components/dashboard-staff";
-import { SessionProvider } from "next-auth/react";
+import { useAuth } from "@/lib/auth-context";
 
-function AppContent() {
-  const { user, isLoading } = useAuth();
+export default function Home() {
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -20,27 +16,5 @@ function AppContent() {
       </div>
     );
   }
-
-  if (!user) {
-    return <LoginForm />;
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-6">
-        {user.rol === "alumno" ? <DashboardAlumno /> : <DashboardStaff />}
-      </main>
-    </div>
-  );
-}
-
-export default function Home() {
-  return (
-    <SessionProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </SessionProvider>
-  );
+  return <LoginForm />;
 }

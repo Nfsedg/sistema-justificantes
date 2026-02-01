@@ -4,7 +4,6 @@ import React from "react";
 
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { addJustificante } from "@/lib/justificantes-store";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar, Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import useJustificantes from "@/hooks/useJustificantes";
 
 const motivos = [
   "Cita médica",
@@ -41,56 +41,26 @@ interface JustificanteFormProps {
 
 export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const { uploadJustificante, isLoadingJustificantes, isErrorJustificantes, isSuccess } = useJustificantes();
   const [formData, setFormData] = useState({
     fechaInicio: "",
     fechaFin: "",
     motivo: "",
     descripcion: "",
-    archivo: null as File | null,
+    file: null as File | null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.fechaInicio || !formData.fechaFin || !formData.motivo) return;
+    if (!user || !formData.file) return;
 
-    setIsSubmitting(true);
-
-    // Simular subida de archivo
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    addJustificante({
-      alumnoId: user.id,
-      fechaInicio: formData.fechaInicio,
-      fechaFin: formData.fechaFin,
-      motivo: formData.motivo,
-      descripcion: formData.descripcion,
-      archivoNombre: formData.archivo?.name,
-      carrera: user.carrera || "Sin carrera asignada",
-    });
-
-    setIsSubmitting(false);
-    setIsSuccess(true);
-
-    // Reset form después de 2 segundos
-    setTimeout(() => {
-      setFormData({
-        fechaInicio: "",
-        fechaFin: "",
-        motivo: "",
-        descripcion: "",
-        archivo: null,
-      });
-      setIsSuccess(false);
-      onSuccess?.();
-    }, 2000);
+    uploadJustificante(formData.file!)
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, archivo: file }));
+      setFormData((prev) => ({ ...prev, file: file }));
     }
   };
 
@@ -229,10 +199,10 @@ export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
                 className="cursor-pointer flex flex-col items-center gap-2"
               >
                 <Upload className="w-8 h-8 text-muted-foreground" />
-                {formData.archivo ? (
+                {formData.file ? (
                   <div className="text-sm">
                     <span className="font-medium text-primary">
-                      {formData.archivo.name}
+                      {formData.file.name}
                     </span>
                     <p className="text-muted-foreground">
                       Clic para cambiar archivo
@@ -255,9 +225,9 @@ export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
           <Button
             type="submit"
             className="w-full"
-            disabled={isSubmitting || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}
+            disabled={isLoadingJustificantes}
           >
-            {isSubmitting ? (
+            {isLoadingJustificantes ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Enviando...
