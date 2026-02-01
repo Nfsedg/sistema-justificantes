@@ -25,6 +25,8 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
+  justificantes Justificantes[]
+
   roleId Int?
   role   Role? @relation(fields: [roleId], references: [id])
 

@@ -13,17 +13,12 @@ import { FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
 export function DashboardAlumno() {
   const { user } = useAuth();
   const [justificantes, setJustificantes] = useState<Justificante[]>([]);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
       setJustificantes(getJustificantesByAlumno(user.id));
     }
-  }, [user, refreshKey]);
-
-  const handleJustificanteSuccess = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+  }, [user]);
 
   const stats = {
     total: justificantes.length,
@@ -110,7 +105,7 @@ export function DashboardAlumno() {
 
         <TabsContent value="nuevo" className="mt-6">
           <div className="max-w-2xl">
-            <JustificanteForm onSuccess={handleJustificanteSuccess} />
+            <JustificanteForm />
           </div>
         </TabsContent>
 

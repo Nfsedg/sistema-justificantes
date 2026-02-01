@@ -25,8 +25,12 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith(path)
   );
 
+
   // If logged in, handle role-based redirects
   if (token?.role) {
+    if (pathname.startsWith("/api")) {
+      return NextResponse.next();
+    }
     // STUDENT
     if (token.role === "STUDENT") {
       if (!pathname.startsWith("/estudiante")) {

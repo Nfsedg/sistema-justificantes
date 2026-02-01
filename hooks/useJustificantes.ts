@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 type useJustificantesReturn = {
   isErrorJustificantes: boolean;
@@ -31,6 +32,7 @@ export default function useJustificantes(): useJustificantesReturn {
       setIsSuccess(true);
       return data.url;
     } catch (error) {
+      toast.error("Error al subir el justificante: " + (error as Error).message);
       setIsErrorJustificantes(true);
       throw error;
     } finally {

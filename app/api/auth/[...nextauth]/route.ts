@@ -4,6 +4,17 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import type { NextAuthOptions } from "next-auth"
 
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
 function isNumericLocalPart(email: string): boolean {
   const [localPart] = email.split("@");
   return /^[0-9]+$/.test(localPart);
@@ -59,6 +70,12 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
     async signIn({ account, profile }: any) {
       if (account.provider === "google") {
         return profile.email_verified && profile.email.endsWith("@upqroo.edu.mx")
@@ -73,6 +90,7 @@ export const authOptions: NextAuthOptions = {
         })
         if (dbUser?.role) {
           token.role = dbUser.role.name
+          token.id = dbUser.id
         }
       }
       return token

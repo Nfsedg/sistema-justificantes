@@ -35,11 +35,7 @@ const motivos = [
   "Otro",
 ];
 
-interface JustificanteFormProps {
-  onSuccess?: () => void;
-}
-
-export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
+export function JustificanteForm() {
   const { user } = useAuth();
   const { uploadJustificante, isLoadingJustificantes, isErrorJustificantes, isSuccess } = useJustificantes();
   const [formData, setFormData] = useState({
@@ -49,14 +45,13 @@ export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
     descripcion: "",
     file: null as File | null,
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !formData.file) return;
-
+    
     uploadJustificante(formData.file!)
   };
-
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
