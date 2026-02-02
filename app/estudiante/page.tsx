@@ -1,4 +1,4 @@
-import { DashboardAlumno } from "@/components/dashboard-alumno";
+import { DashboardAlumno } from "@/components/alumno/dashboard-alumno";
 
 export default function page() {
   return (

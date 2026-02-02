@@ -22,8 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import useJustificantes from "@/hooks/useJustificantes";
+import { DateRangePicker } from "../datepicker";
 
 const motivos = [
   "Cita médica",
@@ -35,28 +36,22 @@ const motivos = [
   "Otro",
 ];
 
-interface JustificanteFormProps {
-  onSuccess?: () => void;
-}
-
-export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
+export function JustificanteForm() {
   const { user } = useAuth();
-  const { uploadJustificante, isLoadingJustificantes, isErrorJustificantes, isSuccess } = useJustificantes();
+  const { uploadJustificante, isLoadingJustificantes, isSuccess } = useJustificantes();
   const [formData, setFormData] = useState({
-    fechaInicio: "",
-    fechaFin: "",
+    fechaInicio: new Date().toISOString(),
+    fechaFin: new Date().toISOString(),
     motivo: "",
     descripcion: "",
     file: null as File | null,
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !formData.file) return;
-
-    uploadJustificante(formData.file!)
+    await uploadJustificante(formData);
   };
-
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -99,61 +94,22 @@ export function JustificanteForm({ onSuccess }: JustificanteFormProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fechaInicio">Fecha de inicio</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="fechaInicio"
-                  type="date"
-                  value={formData.fechaInicio}
-                  onChange={(e) => {
-                    const newFechaInicio = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      fechaInicio: newFechaInicio,
-                      // Si fecha fin es anterior a fecha inicio, actualizar
-                      fechaFin: prev.fechaFin && prev.fechaFin < newFechaInicio ? newFechaInicio : prev.fechaFin,
-                    }));
-                  }}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fechaFin">Fecha de fin</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="fechaFin"
-                  type="date"
-                  value={formData.fechaFin}
-                  min={formData.fechaInicio}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      fechaFin: e.target.value,
-                    }))
-                  }
-                  className="pl-10"
-                  required
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Si es un solo día, selecciona la misma fecha
-              </p>
+              <Label>Selecciona las fechas a justificar</Label>
+              <DateRangePicker 
+                date={{ from: new Date(formData.fechaInicio), to: new Date(formData.fechaFin) }} 
+                setDate={(date) => {
+                setFormData((prev) => ({ ...prev, fechaInicio: date?.from?.toISOString() || "", fechaFin: date?.to?.toISOString() || "" }));
+              }} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="motivo">Motivo</Label>
+            <Label htmlFor="motivo">Motivo (opcional)</Label>
             <Select
               value={formData.motivo}
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, motivo: value }))
               }
-              required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un motivo" />

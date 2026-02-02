@@ -18,21 +18,18 @@ export interface User {
 export interface Carrera {
   id: string;
   nombre: string;
-  abreviatura: string;
   coordinadorId?: string;
 }
 
 export interface Justificante {
-  id: string;
-  alumnoId: string;
-  alumno?: User;
-  fechaInicio: string; // Fecha de inicio de ausencia
-  fechaFin: string; // Fecha de fin de ausencia (puede ser igual a fechaInicio)
-  fechaCreacion: string;
-  motivo: string;
-  descripcion?: string;
-  archivoUrl?: string;
-  archivoNombre?: string;
-  status: JustificanteStatus;
-  carrera: string;
+  id: number;
+  userId: string;
+  user?: User; // optional to avoid forcing joins everywhere
+  fechaInicio: Date;
+  fechaFin: Date;
+  motivo?: string | null;
+  descripcion?: string | null;
+  fileUrl: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

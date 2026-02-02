@@ -1,6 +1,7 @@
 'use client';
 
 import { Header } from "@/components/header";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { SessionProvider } from "next-auth/react";
 import { ReactNode } from "react";
@@ -14,6 +15,7 @@ export default function Providers({ children }: { children: ReactNode }) {
           <div className="container mx-auto px-4 py-6">
             {children}
           </div>
+          <Toaster/>
         </div>
       </AuthProvider>
     </SessionProvider>
