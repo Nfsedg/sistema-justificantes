@@ -1,27 +1,72 @@
+import { Justificante } from "@/lib/types";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface FormDataInterface {
+  fechaInicio: string;
+  fechaFin: string;
+  motivo: string;
+  descripcion: string;
+  file: File | null;
+}
+
 type useJustificantesReturn = {
   isErrorJustificantes: boolean;
-  isLoadingJustificantes: boolean;
+  isUploadingJustificante: boolean;
   isSuccess: boolean;
-  uploadJustificante: (file: File) => Promise<string>;
+  uploadJustificante: (formData: FormDataInterface) => Promise<string>;
+  getJustificantes: () => Promise<void>
+  isLoadingJustificantes: boolean
+  justificantes: Justificante[];
 };
 
+// Hook to manage justificantes GET and POST operations
+// Expose a function to get all justificantes according of the user role
+// STUDENT: only their justificantes
+// ADMIN & COORDINATOR(TODO): all justificantes
+// The role validaton is determined in the API route using the JWT token
+
 export default function useJustificantes(): useJustificantesReturn {
-  const [isErrorJustificantes, setIsErrorJustificantes] = useState(false);
+  const [justificantes, setJustificantes] = useState<Justificante[]>([]);
   const [isLoadingJustificantes, setIsLoadingJustificantes] = useState(false);
+  
+  const [isErrorJustificantes, setIsErrorJustificantes] = useState(false);
+  const [isUploadingJustificante, setIsUploadingJustificante] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const uploadJustificante = async (file: File) => {
+  const getJustificantes = async () => {
     setIsLoadingJustificantes(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const response = await fetch("/api/justificantes");
+      if (!response.ok) {
+        throw new Error("Failed to fetch justificantes");
+      }
+      const data = await response.json();
+      if(data.justificantes) {
+        setJustificantes(data.justificantes);
+      }
+    } catch (error) {
+      setIsErrorJustificantes(true);
+      toast.error("Error al obtener los justificantes: " + (error as Error).message);
+    } finally {
+      setIsLoadingJustificantes(false);
+    }
+  }
+
+  const uploadJustificante = async (formData: FormDataInterface) => {
+    setIsUploadingJustificante(true);
+    try {
+      if (!formData.file) return
+      const formDataToSend = new FormData();
+      formDataToSend.append("fechaInicio", formData.fechaInicio);
+      formDataToSend.append("fechaFin", formData.fechaFin);
+      formDataToSend.append("motivo", formData.motivo);
+      formDataToSend.append("descripcion", formData.descripcion);
+      formDataToSend.append("file", formData.file);
 
       const response = await fetch("/api/justificantes", {
         method: "POST",
-        body: formData,
+        body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -36,14 +81,17 @@ export default function useJustificantes(): useJustificantesReturn {
       setIsErrorJustificantes(true);
       throw error;
     } finally {
-      setIsLoadingJustificantes(false);
+      setIsUploadingJustificante(false);
     }
   };
 
   return {
-    isErrorJustificantes,
     isLoadingJustificantes,
+    isErrorJustificantes,
+    isUploadingJustificante,
     uploadJustificante,
-    isSuccess
+    getJustificantes,
+    isSuccess,
+    justificantes
   };
 }

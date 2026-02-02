@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
     if (!token?.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (token.role !== "STUDENT") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const data = await req.formData();
     const file = data.get("file") as File | null;
   
@@ -52,6 +55,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, record });
   } catch (error) {
     console.log(error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET! });
+
+    if (!token?.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isAlumno = token.role === "STUDENT";
+    let justificantes = [];
+    if(isAlumno) {
+      justificantes = await prisma.justificantes.findMany({
+        where: { userId: token.sub },
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      justificantes = await prisma.justificantes.findMany({
+        orderBy: { createdAt: "desc" },
+        include: { user: true },
+      });
+    }
+
+    return NextResponse.json({ justificantes });
+  } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
