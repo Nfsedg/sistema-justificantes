@@ -33,6 +33,9 @@ interface JustificantesListProps {
   description?: string;
 }
 
+// USE SAME COMPONENT FOR ADMIN/COORDINATOR AND STUDENT VIEWS
+// The isAlumnoView prop determines if the view is for students or for admin/coordinators
+
 export function JustificantesList({
   justificantes,
   isAlumnoView = false,
