@@ -8,6 +8,7 @@ Requires MySQL to connect to database and can run the app (Check the .env.exampl
 Uses PRISMA ORM
 
 - Download repo from Github
+- Create and add the `.env` enviroment variables
 - Install dependencies with `pnpm install`
 - Update your database `pnpm prisma migrate deploy`(recommended) or `pnpm prisma db push`
 - Generate prisma client `pnpm prisma generate`
