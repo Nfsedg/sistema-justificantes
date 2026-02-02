@@ -3,8 +3,11 @@
 ## SETUP
 
 This project was created with nodejs version 22.12.0
+
 Package managed with `pnpm`
+
 Requires MySQL to connect to database and can run the app (Check the .env.example to setup your MySQL url)
+
 Uses PRISMA ORM
 
 - Download repo from Github
