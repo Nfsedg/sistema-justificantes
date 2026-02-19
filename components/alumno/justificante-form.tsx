@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -25,6 +24,7 @@ import {
 import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import useJustificantes from "@/hooks/useJustificantes";
 import { DateRangePicker } from "../datepicker";
+import { toast } from "sonner";
 
 const motivos = [
   "Cita médica",
@@ -48,7 +48,10 @@ export function JustificanteForm() {
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.file) return;
+    if (!user || !formData.file || !formData.fechaInicio || !formData.fechaFin) {
+      toast.error("Por favor, completa todos los campos obligatorios.");
+      return;
+    };
     await uploadJustificante(formData);
   };
   
@@ -94,7 +97,7 @@ export function JustificanteForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Selecciona las fechas a justificar</Label>
+              <Label>Selecciona las fechas a justificar*</Label>
               <DateRangePicker 
                 date={{ from: new Date(formData.fechaInicio), to: new Date(formData.fechaFin) }} 
                 setDate={(date) => {
@@ -141,7 +144,7 @@ export function JustificanteForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="archivo">Documento de respaldo</Label>
+            <Label htmlFor="archivo">Documento de respaldo*</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               <input
                 id="archivo"
@@ -180,7 +183,7 @@ export function JustificanteForm() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full cursor-pointer"
             disabled={isLoadingJustificantes}
           >
             {isLoadingJustificantes ? (
