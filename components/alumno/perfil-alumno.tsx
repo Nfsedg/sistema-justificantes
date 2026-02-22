@@ -32,9 +32,9 @@ export function PerfilAlumno({ onComplete }: PerfilAlumnoProps) {
   const { user, updateProfile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    matricula: user?.matricula || "",
-    carrera: user?.carrera || "",
-    semestre: user?.semestre?.toString() || "",
+    matricula: "",
+    carrera: "",
+    semestre: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

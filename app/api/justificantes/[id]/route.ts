@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma"
 // 🔹 GET BY ID
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id: paramId } = await params;
+    const id = parseInt(paramId);
 
     const justificante = await prisma.justificantes.findUnique({
       where: { id },
@@ -44,10 +45,11 @@ export async function GET(
 // 🔹 UPDATE
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id: paramId } = await params;
+    const id = parseInt(paramId);
     const body = await req.json()
 
     const justificante = await prisma.justificantes.update({
@@ -74,10 +76,11 @@ export async function PUT(
 // 🔹 DELETE
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id)
+    const { id: paramId } = await params;
+    const id = parseInt(paramId);
 
     await prisma.justificantes.delete({
       where: { id }

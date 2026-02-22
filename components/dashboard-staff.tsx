@@ -22,30 +22,25 @@ export function DashboardStaff() {
   const { user } = useAuth();
   const [justificantes, setJustificantes] = useState<Justificante[]>([]);
 
-  const isCoordinador = user?.rol === "coordinador";
+  const isCoordinador = user?.role === "coordinador";
 
   useEffect(() => {
-    // Los coordinadores ven solo su carrera, los profesores ven todos
-    if (isCoordinador && user?.carrera) {
-      setJustificantes(getJustificantesByCarrera(user.carrera));
-    } else {
-      setJustificantes(getJustificantes());
-    }
+    setJustificantes(getJustificantes());
   }, [user, isCoordinador]);
 
   const stats = {
     total: justificantes.length,
-    pendientes: justificantes.filter((j) => j.status === "pendiente").length,
-    aprobados: justificantes.filter((j) => j.status === "aprobado").length,
-    alumnos: new Set(justificantes.map((j) => j.alumnoId)).size,
+    pendientes: justificantes.length,
+    aprobados: 0,
+    alumnos: new Set(justificantes.map((j) => j.estudianteId)).size,
   };
 
-  const pendientes = justificantes.filter((j) => j.status === "pendiente");
+  const pendientes = justificantes;
   const recientes = [...justificantes]
     .sort(
       (a, b) =>
-        new Date(b.fechaCreacion).getTime() -
-        new Date(a.fechaCreacion).getTime()
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
     )
     .slice(0, 10);
 
@@ -60,7 +55,7 @@ export function DashboardStaff() {
           {isCoordinador ? (
             <>
               <GraduationCap className="inline w-4 h-4 mr-1" />
-              {user?.carrera}
+              Coordinador
             </>
           ) : (
             "Consulta los justificantes de los alumnos"
@@ -136,11 +131,11 @@ export function DashboardStaff() {
         <TabsContent value="todos" className="mt-6">
           <JustificantesList
             justificantes={justificantes}
-            showAlumnoInfo={true}
+            isAlumnoView={false}
             title="Todos los Justificantes"
             description={
               isCoordinador
-                ? `Justificantes de alumnos de ${user?.carrera}`
+                ? `Justificantes de alumnos de tu coordinación`
                 : "Todos los justificantes registrados en el sistema"
             }
           />
@@ -149,7 +144,7 @@ export function DashboardStaff() {
         <TabsContent value="pendientes" className="mt-6">
           <JustificantesList
             justificantes={pendientes}
-            showAlumnoInfo={true}
+            isAlumnoView={false}
             title="Justificantes Pendientes"
             description="Justificantes que requieren atención"
           />
@@ -158,7 +153,7 @@ export function DashboardStaff() {
         <TabsContent value="recientes" className="mt-6">
           <JustificantesList
             justificantes={recientes}
-            showAlumnoInfo={true}
+            isAlumnoView={false}
             title="Justificantes Recientes"
             description="Últimos 10 justificantes registrados"
           />

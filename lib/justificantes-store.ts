@@ -9,15 +9,15 @@ export function getJustificantes(): Justificante[] {
   return justificantes;
 }
 
-export function getJustificantesByAlumno(alumnoId: string): Justificante[] {
-  return justificantes.filter(j => j.alumnoId === alumnoId);
+export function getJustificantesByAlumno(estudianteId: string): Justificante[] {
+  return justificantes.filter(j => j.estudianteId === estudianteId);
 }
 
 export function getJustificantesByCarrera(carrera: string): Justificante[] {
-  return justificantes.filter(j => j.carrera === carrera);
+  return justificantes;
 }
 
-export function getJustificanteById(id: string): Justificante | undefined {
+export function getJustificanteById(id: number): Justificante | undefined {
   return justificantes.find(j => j.id === id);
 }
 
@@ -25,19 +25,16 @@ export function searchJustificantes(query: string, carrera?: string): Justifican
   const lowerQuery = query.toLowerCase();
   return justificantes.filter(j => {
     const matchesQuery = 
-      j.alumno?.nombre.toLowerCase().includes(lowerQuery) ||
-      j.alumno?.apellidos.toLowerCase().includes(lowerQuery) ||
-      j.alumno?.matricula?.toLowerCase().includes(lowerQuery) ||
-      j.motivo.toLowerCase().includes(lowerQuery);
+      j.estudiante?.name?.toLowerCase().includes(lowerQuery) ||
+      j.estudiante?.username?.toLowerCase().includes(lowerQuery) ||
+      j.motivo?.toLowerCase().includes(lowerQuery);
     
-    const matchesCarrera = !carrera || carrera === 'todas' || j.carrera === carrera;
-    
-    return matchesQuery && matchesCarrera;
+    return matchesQuery;
   });
 }
 
 export function addJustificante(data: {
-  alumnoId: string;
+  estudianteId: string;
   fechaInicio: string;
   fechaFin: string;
   motivo: string;
@@ -45,31 +42,25 @@ export function addJustificante(data: {
   archivoNombre?: string;
   carrera: string;
 }): Justificante {
-  const alumno = mockUsers.find(u => u.id === data.alumnoId);
+  const estudiante = mockUsers.find(u => u.id === data.estudianteId);
   
   const newJustificante: Justificante = {
-    id: String(nextId++),
-    alumnoId: data.alumnoId,
-    alumno,
-    fechaInicio: data.fechaInicio,
-    fechaFin: data.fechaFin,
-    fechaCreacion: new Date().toISOString().split('T')[0],
+    id: nextId++,
+    estudianteId: data.estudianteId,
+    estudiante,
+    fechaInicio: new Date(data.fechaInicio),
+    fechaFin: new Date(data.fechaFin),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     motivo: data.motivo,
     descripcion: data.descripcion,
-    archivoNombre: data.archivoNombre,
-    status: 'pendiente',
-    carrera: data.carrera,
+    fileUrl: data.archivoNombre || "",
   };
 
   justificantes = [newJustificante, ...justificantes];
   return newJustificante;
 }
 
-export function updateJustificanteStatus(id: string, status: 'aprobado' | 'rechazado'): boolean {
-  const index = justificantes.findIndex(j => j.id === id);
-  if (index !== -1) {
-    justificantes[index] = { ...justificantes[index], status };
-    return true;
-  }
+export function updateJustificanteStatus(id: number, status: 'aprobado' | 'rechazado'): boolean {
   return false;
 }

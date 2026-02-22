@@ -186,6 +186,7 @@ export async function GET(req: NextRequest) {
     const justificantes = await prisma.justificantes.findMany({
       where: queryWhere,
       include: {
+        estudiante: true,
         workflowInstancia: {
           include: {
             etapasInstancia: {

@@ -24,8 +24,9 @@ type useJustificantesReturn = {
 
 // Hook to manage justificantes GET and POST operations
 // Expose a function to get all justificantes according of the user role
-// STUDENT: only their justificantes
-// ADMIN & COORDINATOR(TODO): all justificantes
+// ESTUDIANTE: only their justificantes
+// ADMIN & COORDINADOR: all justificantes
+// DOCENTE: only just ificantes assigned to them
 // The role validaton is determined in the API route using the JWT token
 
 export default function useJustificantes(): useJustificantesReturn {
@@ -44,7 +45,9 @@ export default function useJustificantes(): useJustificantesReturn {
         throw new Error("Failed to fetch justificantes");
       }
       const data = await response.json();
-      if(data.justificantes) {
+      if (Array.isArray(data)) {
+        setJustificantes(data);
+      } else if (data.justificantes) {
         setJustificantes(data.justificantes);
       }
     } catch (error) {

@@ -48,9 +48,8 @@ export function JustificantesList({
     return justificantes.filter((j) => {
       const matchesSearch =
         search === "" ||
-        j.user?.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        j.user?.apellidos.toLowerCase().includes(search.toLowerCase()) ||
-        j.user?.matricula?.toLowerCase().includes(search.toLowerCase()) ||
+        j.estudiante?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        j.estudiante?.email?.toLowerCase().includes(search.toLowerCase()) ||
         j.motivo?.toLowerCase().includes(search.toLowerCase()) ||
         j.descripcion?.toLowerCase().includes(search.toLowerCase());
 
@@ -112,10 +111,10 @@ export function JustificantesList({
                         <div className="flex items-center gap-3">
                           <div>
                             <p className="font-medium text-sm">
-                              {j.user?.nombre} {j.user?.apellidos}
+                              {j.estudiante?.name}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {j.user?.email.split("@")[0]}
+                              {j.estudiante?.email?.split("@")[0]}
                             </p>
                           </div>
                         </div>

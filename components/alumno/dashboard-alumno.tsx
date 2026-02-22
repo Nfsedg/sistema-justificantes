@@ -8,7 +8,6 @@ import useJustificantes from "@/hooks/useJustificantes";
 import { useEffect } from "react";
 
 export function DashboardAlumno() {
-  const { user } = useAuth();
   const { justificantes, getJustificantes } = useJustificantes()
 
   useEffect(() => {
