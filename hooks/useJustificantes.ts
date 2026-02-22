@@ -7,6 +7,8 @@ interface FormDataInterface {
   fechaFin: string;
   motivo: string;
   descripcion: string;
+  tutorEmail: string;
+  profesoresEmails: string[];
   file: File | null;
 }
 
@@ -62,6 +64,8 @@ export default function useJustificantes(): useJustificantesReturn {
       formDataToSend.append("fechaFin", formData.fechaFin);
       formDataToSend.append("motivo", formData.motivo);
       formDataToSend.append("descripcion", formData.descripcion);
+      formDataToSend.append("tutorEmail", formData.tutorEmail);
+      formDataToSend.append("profesoresEmails", JSON.stringify(formData.profesoresEmails));
       formDataToSend.append("file", formData.file);
 
       const response = await fetch("/api/justificantes", {

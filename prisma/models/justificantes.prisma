@@ -1,13 +1,126 @@
+enum JustificanteStatus {
+  BORRADOR
+  EN_PROCESO
+  FINALIZADO
+  CON_OBSERVACIONES
+  CANCELADO
+}
+
+enum TipoAprobacion {
+  SECUENCIAL
+  PARALELA
+}
+
+enum EstadoEtapa {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+}
+
+enum EstadoRevision {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
 model Justificantes {
-  id          Int      @id @default(autoincrement())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  id Int @id @default(autoincrement())
+
+  estudianteId String
+  estudiante   User   @relation(fields: [estudianteId], references: [id])
+
+  status JustificanteStatus @default(EN_PROCESO)
+
   fechaInicio DateTime
   fechaFin    DateTime
   motivo      String?
   descripcion String?
   fileUrl     String
 
+  workflowInstancia WorkflowInstancia?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Workflow {
+  id     Int    @id @default(autoincrement())
+  nombre String
+
+  etapas WorkflowEtapa[]
+
+  createdAt          DateTime            @default(now())
+  workflowInstancias WorkflowInstancia[]
+}
+
+model WorkflowEtapa {
+  id Int @id @default(autoincrement())
+
+  workflowId Int
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+
+  nombre String
+  orden  Int
+
+  tipo TipoAprobacion @default(PARALELA)
+
+  createdAt               DateTime                 @default(now())
+  workflowEtapaInstancias WorkflowEtapaInstancia[]
+
+  @@unique([workflowId, orden])
+}
+
+model WorkflowInstancia {
+  id Int @id @default(autoincrement())
+
+  justificanteId Int           @unique
+  justificante   Justificantes @relation(fields: [justificanteId], references: [id])
+
+  workflowId Int
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+
+  etapasInstancia WorkflowEtapaInstancia[]
+
+  createdAt DateTime @default(now())
+}
+
+model WorkflowEtapaInstancia {
+  id Int @id @default(autoincrement())
+
+  workflowInstanciaId Int
+  workflowInstancia   WorkflowInstancia @relation(fields: [workflowInstanciaId], references: [id])
+
+  workflowEtapaId Int
+  workflowEtapa   WorkflowEtapa @relation(fields: [workflowEtapaId], references: [id])
+
+  estado EstadoEtapa @default(PENDIENTE)
+
+  asignaciones WorkflowAsignacion[]
+
+  orden Int
+
+  iniciadaEn   DateTime?
+  completadaEn DateTime?
+
+  @@unique([workflowInstanciaId, orden])
+}
+
+model WorkflowAsignacion {
+  id Int @id @default(autoincrement())
+
+  etapaInstanciaId Int
+  etapaInstancia   WorkflowEtapaInstancia @relation(fields: [etapaInstanciaId], references: [id])
+
+  email  String
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  estado     EstadoRevision @default(PENDIENTE)
+  comentario String?
+
+  revisadoEn DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([etapaInstanciaId, email])
 }

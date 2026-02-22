@@ -18,6 +18,11 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // If user is at root `/` and not logged in, render login page
+  if (pathname === "/" && !token) {
+    return NextResponse.next();
+  }
+
   // Protected routes
   const protectedPaths = ["/dashboard", "/justificantes", "/profile", "/upload", "/estudiante"];
 
@@ -31,17 +36,28 @@ export async function proxy(req: NextRequest) {
     if (pathname.startsWith("/api")) {
       return NextResponse.next();
     }
-    // STUDENT
-    if (token.role === "STUDENT") {
-      if (!pathname.startsWith("/estudiante")) {
+    
+    // Si están en la ruta raiz o login mandalos a su dashboard correspondiente
+    const isRootOrLogin = pathname === "/" || pathname === "/login";
+
+    // ESTUDIANTE
+    if (token.role === "ESTUDIANTE") {
+      if (!pathname.startsWith("/estudiante") && isRootOrLogin) {
         return NextResponse.redirect(new URL("/estudiante", req.url));
       }
     }
 
-    // TEACHER
-    if (token.role === "TEACHER") {
-      if (!pathname.startsWith("/justificantes")) {
-        return NextResponse.redirect(new URL("/justificantes", req.url));
+    // DOCENTE
+    if (token.role === "DOCENTE") {
+      if (!pathname.startsWith("/docentes") && !pathname.startsWith("/justificantes") && isRootOrLogin) {
+        return NextResponse.redirect(new URL("/docentes", req.url));
+      }
+    }
+
+    // COORDINADOR
+    if (token.role === "COORDINADOR") {
+      if (!pathname.startsWith("/coordinador") && isRootOrLogin) {
+        return NextResponse.redirect(new URL("/coordinador", req.url));
       }
     }
   }

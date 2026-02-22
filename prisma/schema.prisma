@@ -25,20 +25,20 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
-  justificantes Justificantes[]
+  justificantesSubidos Justificantes[]
 
-  roleId Int?
-  role   Role? @relation(fields: [roleId], references: [id])
+  asignaciones WorkflowAsignacion[]
+
+  role   Role @default(ESTUDIANTE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Role {
-  id   Int    @id @default(autoincrement())
-  name String @unique // COORD, STUDENT, TEACHER
-
-  users User[]
+enum Role {
+  ESTUDIANTE
+  DOCENTE
+  COORDINADOR
 }
 
 model Account {

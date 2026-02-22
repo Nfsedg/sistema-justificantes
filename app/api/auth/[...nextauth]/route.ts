@@ -35,44 +35,28 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   events: {
     async createUser({ user }) {
-      if(user.email === undefined || user.email === null) return;
-      if(isNumericLocalPart(user.email)) {
-        const defaultRole = await prisma.role.findUnique({
-          where: { name: "STUDENT" },
-        })
-        if (defaultRole) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { roleId: defaultRole.id },
-          })
-        }
-      } else if(user.email === "coordinator@upqroo.edu.mx") {
-        const defaultRole = await prisma.role.findUnique({
-          where: { name: "COORD" },
-        })
-        if (defaultRole) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { roleId: defaultRole.id },
-          })
-        }
-      } else {
-        const defaultRole = await prisma.role.findUnique({
-          where: { name: "TEACHER" },
-        })
-        if (defaultRole) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { roleId: defaultRole.id },
-          })
-        }
+      if (!user.email) return;
+      
+      let newRole: "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" = "DOCENTE";
+      
+      if (isNumericLocalPart(user.email)) {
+        newRole = "ESTUDIANTE";
+      } else if (user.email === "coordinator@upqroo.edu.mx") {
+        newRole = "COORDINADOR";
       }
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: newRole },
+      });
     },
   },
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        // Also expose role to session if needed anywhere else
+        (session.user as any).role = token.role; 
       }
       return session;
     },
@@ -86,11 +70,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          include: { role: true },
         })
         if (dbUser?.role) {
-          token.role = dbUser.role.name
-          token.id = dbUser.id
+          token.role = dbUser.role;
+          token.id = dbUser.id;
         }
       }
       return token
