@@ -31,6 +31,7 @@ interface JustificantesListProps {
   isAlumnoView?: boolean;
   title?: string;
   description?: string;
+  onViewDetails?: (justificante: Justificante) => void;
 }
 
 // USE SAME COMPONENT FOR ADMIN/COORDINATOR AND STUDENT VIEWS
@@ -41,6 +42,7 @@ export function JustificantesList({
   isAlumnoView = false,
   title = "Justificantes",
   description = "Historial de justificantes registrados",
+  onViewDetails,
 }: JustificantesListProps) {
   const [search, setSearch] = useState("");
 
@@ -149,7 +151,7 @@ export function JustificantesList({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(j)}>
                         Ver detalles
                       </Button>
                     </TableCell>

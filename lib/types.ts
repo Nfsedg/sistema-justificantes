@@ -20,11 +20,13 @@ export interface Justificante {
   id: number;
   estudianteId: string;
   estudiante?: User; // optional to avoid forcing joins everywhere
-  fechaInicio: Date;
-  fechaFin: Date;
+  status?: string;
+  workflowInstancia?: any;
+  fechaInicio: Date | string;
+  fechaFin: Date | string;
   motivo?: string | null;
   descripcion?: string | null;
   fileUrl: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

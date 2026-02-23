@@ -162,9 +162,9 @@ export async function GET(req: NextRequest) {
 
     if (token.role === "ESTUDIANTE") {
       queryWhere = { estudianteId: token.sub }
-    } else if (token.role === "DOCENTE") {
+    } else if (token.role === "DOCENTE" || token.role === "TUTOR") {
       if (!token.email) {
-        return NextResponse.json({ error: "El docente no tiene un correo válido registrado en la sesión" }, { status: 400 })
+        return NextResponse.json({ error: `El ${token.role.toLowerCase()} no tiene un correo válido registrado en la sesión` }, { status: 400 })
       }
       queryWhere = {
         workflowInstancia: {

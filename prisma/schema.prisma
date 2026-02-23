@@ -38,6 +38,7 @@ model User {
 enum Role {
   ESTUDIANTE
   DOCENTE
+  TUTOR // Mismo que docente pero con apartado de tutoria
   COORDINADOR
 }
 
