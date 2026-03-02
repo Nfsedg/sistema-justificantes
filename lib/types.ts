@@ -1,4 +1,4 @@
-export type UserRole = 'alumno' | 'profesor' | 'coordinador';
+export type UserRole = 'ESTUDIANTE' | 'DOCENTE' | 'COORDINADOR' | 'TUTOR';
 
 export type JustificanteStatus = 'pendiente' | 'aprobado' | 'rechazado';
 

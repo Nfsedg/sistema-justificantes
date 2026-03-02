@@ -37,9 +37,17 @@ export const authOptions: NextAuthOptions = {
     async createUser({ user }) {
       if (!user.email) return;
       
-      let newRole: "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" = "DOCENTE";
+      let newRole: "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" | "TUTOR" = "DOCENTE";
       
-      if (isNumericLocalPart(user.email)) {
+      const isDev = process.env.NODE_ENV === 'development';
+      const devTutorEmail = process.env.DEV_TUTOR_EMAIL;
+      const devCoordinatorEmail = process.env.DEV_COORDINATOR_EMAIL;
+
+      if (isDev && devTutorEmail && user.email === devTutorEmail) {
+        newRole = "TUTOR";
+      } else if (isDev && devCoordinatorEmail && user.email === devCoordinatorEmail) {
+        newRole = "COORDINADOR";
+      } else if (isNumericLocalPart(user.email)) {
         newRole = "ESTUDIANTE";
       } else if (user.email === "coordinator@upqroo.edu.mx") {
         newRole = "COORDINADOR";
@@ -47,7 +55,7 @@ export const authOptions: NextAuthOptions = {
       
       await prisma.user.update({
         where: { id: user.id },
-        data: { role: newRole },
+        data: { role: newRole as any }, // Cast to any to handle Prisma enum type if needed
       });
     },
   },
@@ -62,21 +70,38 @@ export const authOptions: NextAuthOptions = {
     },
     async signIn({ account, profile }: any) {
       if (account.provider === "google") {
-        return profile.email_verified && profile.email.endsWith("@upqroo.edu.mx")
+        const isDev = process.env.NODE_ENV === 'development';
+        // En desarrollo, permitir cualquier correo electrónico verificado
+        if (isDev) {
+          return profile.email_verified;
+        }
+        // En producción, restringir a correos institucionales
+        return profile.email_verified && profile.email.endsWith("@upqroo.edu.mx");
       }
-      return false
+      return false;
     },
     async jwt({ token, user }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-        })
+        });
         if (dbUser?.role) {
           token.role = dbUser.role;
           token.id = dbUser.id;
         }
       }
-      return token
+      
+      // Sobrescribir el rol en el token si estamos en desarrollo
+      const isDev = process.env.NODE_ENV === 'development';
+      if (isDev && token.email) {
+        if (process.env.DEV_TUTOR_EMAIL && token.email === process.env.DEV_TUTOR_EMAIL) {
+          token.role = "TUTOR";
+        } else if (process.env.DEV_COORDINATOR_EMAIL && token.email === process.env.DEV_COORDINATOR_EMAIL) {
+          token.role = "COORDINADOR";
+        }
+      }
+
+      return token;
     }
   },
 }
