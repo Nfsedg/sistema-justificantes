@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -22,9 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, Loader2, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import useJustificantes from "@/hooks/useJustificantes";
 import { DateRangePicker } from "../datepicker";
+import { toast } from "sonner";
 
 const motivos = [
   "Cita médica",
@@ -44,14 +46,38 @@ export function JustificanteForm() {
     fechaFin: new Date().toISOString(),
     motivo: "",
     descripcion: "",
+    tutorEmail: "",
+    profesoresEmails: [] as string[],
     file: null as File | null,
   });
+  const [profesorEmailInput, setProfesorEmailInput] = useState("");
+
+  const addProfesorEmail = () => {
+    if (profesorEmailInput.trim() && !formData.profesoresEmails.includes(profesorEmailInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        profesoresEmails: [...prev.profesoresEmails, profesorEmailInput.trim()]
+      }));
+      setProfesorEmailInput("");
+    }
+  };
+
+  const removeProfesorEmail = (emailToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      profesoresEmails: prev.profesoresEmails.filter(email => email !== emailToRemove)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.file) return;
+    if (!user || !formData.file || !formData.fechaInicio || !formData.fechaFin || !formData.tutorEmail) {
+      toast.error("Por favor, completa todos los campos obligatorios.");
+      return;
+    };
     await uploadJustificante(formData);
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -93,13 +119,65 @@ export function JustificanteForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="tutorEmail">Correo electrónico del Tutor*</Label>
+                <Input
+                  id="tutorEmail"
+                  type="email"
+                  required
+                  placeholder="tutor@upqroo.edu.mx"
+                  value={formData.tutorEmail}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, tutorEmail: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="profesorEmail">Correos de Profesores (Opcional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="profesorEmail"
+                    type="email"
+                    placeholder="profesor@upqroo.edu.mx"
+                    value={profesorEmailInput}
+                    onChange={(e) => setProfesorEmailInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addProfesorEmail();
+                      }
+                    }}
+                  />
+                  <Button type="button" variant="secondary" onClick={addProfesorEmail}>
+                    Añadir
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.profesoresEmails.map((email, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {email}
+                      <button
+                        type="button"
+                        onClick={() => removeProfesorEmail(email)}
+                        className="rounded-full hover:bg-muted p-0.5"
+                      >
+                        <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Selecciona las fechas a justificar</Label>
-              <DateRangePicker 
-                date={{ from: new Date(formData.fechaInicio), to: new Date(formData.fechaFin) }} 
+              <Label>Selecciona las fechas a justificar*</Label>
+              <DateRangePicker
+                date={{ from: new Date(formData.fechaInicio), to: new Date(formData.fechaFin) }}
                 setDate={(date) => {
-                setFormData((prev) => ({ ...prev, fechaInicio: date?.from?.toISOString() || "", fechaFin: date?.to?.toISOString() || "" }));
-              }} />
+                  setFormData((prev) => ({ ...prev, fechaInicio: date?.from?.toISOString() || "", fechaFin: date?.to?.toISOString() || "" }));
+                }} />
             </div>
           </div>
 
@@ -141,7 +219,7 @@ export function JustificanteForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="archivo">Documento de respaldo</Label>
+            <Label htmlFor="archivo">Documento de respaldo*</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               <input
                 id="archivo"
@@ -180,7 +258,7 @@ export function JustificanteForm() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full cursor-pointer"
             disabled={isLoadingJustificantes}
           >
             {isLoadingJustificantes ? (

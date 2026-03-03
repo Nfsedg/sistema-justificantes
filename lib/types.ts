@@ -1,18 +1,13 @@
-export type UserRole = 'alumno' | 'profesor' | 'coordinador';
+export type UserRole = 'ESTUDIANTE' | 'DOCENTE' | 'COORDINADOR' | 'TUTOR';
 
 export type JustificanteStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
 export interface User {
   id: string;
-  email: string;
-  nombre: string;
-  apellidos: string;
-  rol: UserRole;
-  carrera?: string;
-  semestre?: number; // Solo para alumnos (1-9)
-  matricula?: string; // Solo para alumnos
-  imagen?: string;
-  perfilCompleto?: boolean; // Indica si el alumno ya completó su información
+  name?: string | null;
+  username?: string | null;
+  email?: string | null;
+  role: UserRole;
 }
 
 export interface Carrera {
@@ -23,13 +18,15 @@ export interface Carrera {
 
 export interface Justificante {
   id: number;
-  userId: string;
-  user?: User; // optional to avoid forcing joins everywhere
-  fechaInicio: Date;
-  fechaFin: Date;
+  estudianteId: string;
+  estudiante?: User; // optional to avoid forcing joins everywhere
+  status?: string;
+  workflowInstancia?: any;
+  fechaInicio: Date | string;
+  fechaFin: Date | string;
   motivo?: string | null;
   descripcion?: string | null;
   fileUrl: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

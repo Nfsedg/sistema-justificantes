@@ -62,19 +62,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Función solo para demo - permite cambiar de rol fácilmente
   const switchRole = (role: UserRole) => {
-    const userWithRole = mockUsers.find(u => u.rol === role);
+    const userWithRole = mockUsers.find(u => u.role === role);
     if (userWithRole) {
       setUser(userWithRole);
     }
   };
 
-  // Actualizar perfil del alumno
   const updateProfile = (data: { carrera?: string; semestre?: number; matricula?: string }) => {
     if (user) {
       setUser({
         ...user,
-        ...data,
-        perfilCompleto: !!(data.carrera && data.semestre && data.matricula),
       });
     }
   };

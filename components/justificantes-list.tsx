@@ -31,6 +31,7 @@ interface JustificantesListProps {
   isAlumnoView?: boolean;
   title?: string;
   description?: string;
+  onViewDetails?: (justificante: Justificante) => void;
 }
 
 // USE SAME COMPONENT FOR ADMIN/COORDINATOR AND STUDENT VIEWS
@@ -41,6 +42,7 @@ export function JustificantesList({
   isAlumnoView = false,
   title = "Justificantes",
   description = "Historial de justificantes registrados",
+  onViewDetails,
 }: JustificantesListProps) {
   const [search, setSearch] = useState("");
 
@@ -48,9 +50,8 @@ export function JustificantesList({
     return justificantes.filter((j) => {
       const matchesSearch =
         search === "" ||
-        j.user?.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        j.user?.apellidos.toLowerCase().includes(search.toLowerCase()) ||
-        j.user?.matricula?.toLowerCase().includes(search.toLowerCase()) ||
+        j.estudiante?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        j.estudiante?.email?.toLowerCase().includes(search.toLowerCase()) ||
         j.motivo?.toLowerCase().includes(search.toLowerCase()) ||
         j.descripcion?.toLowerCase().includes(search.toLowerCase());
 
@@ -112,10 +113,10 @@ export function JustificantesList({
                         <div className="flex items-center gap-3">
                           <div>
                             <p className="font-medium text-sm">
-                              {j.user?.nombre} {j.user?.apellidos}
+                              {j.estudiante?.name}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {j.user?.email.split("@")[0]}
+                              {j.estudiante?.email?.split("@")[0]}
                             </p>
                           </div>
                         </div>
@@ -150,7 +151,7 @@ export function JustificantesList({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(j)}>
                         Ver detalles
                       </Button>
                     </TableCell>
