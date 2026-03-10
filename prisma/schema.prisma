@@ -29,7 +29,7 @@ model User {
 
   asignaciones WorkflowAsignacion[]
 
-  role   Role @default(ESTUDIANTE)
+  role Role @default(ESTUDIANTE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
