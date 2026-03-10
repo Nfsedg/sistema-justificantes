@@ -100,13 +100,6 @@ export function DashboardCoordinador() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Panel del Coordinador</h2>
-        <p className="text-muted-foreground mt-2">
-          Gestiona los usuarios de la plataforma y administra los roles de docentes y tutores.
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Directorio de Usuarios</CardTitle>

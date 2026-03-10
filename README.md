@@ -54,5 +54,5 @@ Filtrado de justificantes
 -Envio de Mailing cuando se asigna a profesor
 -Exportación de datos (Excel/CSV)
 
-FLUJO de envio de Justificante:
+FLUJO default de envio de Justificante:
 Alumno -> Tutor (Genera Formato justificante) -> Maestros (Visto, Pendiente-Notas si requiere actividad adicional, Aprovado)
