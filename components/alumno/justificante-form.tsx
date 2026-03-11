@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +21,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, CheckCircle2, Loader2, X } from "lucide-react";
+import { Upload, FileText, CheckCircle2, Loader2, X, Check, ChevronsUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { usePersonalAcademico } from "@/hooks/usePersonalAcademico";
 import useJustificantes from "@/hooks/useJustificantes";
 import { DateRangePicker } from "../datepicker";
 import { toast } from "sonner";
@@ -41,6 +56,21 @@ const motivos = [
 export function JustificanteForm() {
   const { user } = useAuth();
   const { uploadJustificante, isLoadingJustificantes, isSuccess } = useJustificantes();
+  const { personal, getPersonal, isLoadingPersonal } = usePersonalAcademico();
+  const [openTutor, setOpenTutor] = useState(false);
+  const [openProfesor, setOpenProfesor] = useState(false);
+  const [tutorInputValue, setTutorInputValue] = useState("");
+  const [profesorInputValue, setProfesorInputValue] = useState("");
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  useEffect(() => {
+    getPersonal();
+  }, [getPersonal]);
+
+  const tutores = personal.filter(p => p.role === "TUTOR");
+  const docentes = personal.filter(p => p.role === "DOCENTE" || p.role === "TUTOR");
+
   const [formData, setFormData] = useState({
     fechaInicio: new Date().toISOString(),
     fechaFin: new Date().toISOString(),
@@ -50,18 +80,6 @@ export function JustificanteForm() {
     profesoresEmails: [] as string[],
     file: null as File | null,
   });
-  const [profesorEmailInput, setProfesorEmailInput] = useState("");
-
-  const addProfesorEmail = () => {
-    if (profesorEmailInput.trim() && !formData.profesoresEmails.includes(profesorEmailInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        profesoresEmails: [...prev.profesoresEmails, profesorEmailInput.trim()]
-      }));
-      setProfesorEmailInput("");
-    }
-  };
-
   const removeProfesorEmail = (emailToRemove: string) => {
     setFormData(prev => ({
       ...prev,
@@ -120,44 +138,159 @@ export function JustificanteForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-2 flex flex-col">
                 <Label htmlFor="tutorEmail">Correo electrónico del Tutor*</Label>
-                <Input
-                  id="tutorEmail"
-                  type="email"
-                  required
-                  placeholder="tutor@upqroo.edu.mx"
-                  value={formData.tutorEmail}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, tutorEmail: e.target.value }))
-                  }
-                />
+                <Popover open={openTutor} onOpenChange={setOpenTutor}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openTutor}
+                      className="w-full justify-between"
+                      disabled={isLoadingPersonal}
+                    >
+                      {formData.tutorEmail
+                        ? tutores.find((tutor) => tutor.email === formData.tutorEmail)?.name || formData.tutorEmail
+                        : "Seleccionar tutor..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Buscar tutor por nombre o correo..." 
+                        value={tutorInputValue}
+                        onValueChange={setTutorInputValue}
+                      />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+                        <CommandGroup>
+                          {tutores.map((tutor) => (
+                            <CommandItem
+                              key={tutor.id}
+                              value={`${tutor.name} ${tutor.email}`}
+                              onSelect={() => {
+                                setFormData((prev) => ({ ...prev, tutorEmail: tutor.email || "" }));
+                                setOpenTutor(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.tutorEmail === tutor.email ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {tutor.name} ({tutor.email})
+                            </CommandItem>
+                          ))}
+                          {emailRegex.test(tutorInputValue) && !tutores.find(t => t.email === tutorInputValue) && (
+                            <CommandItem
+                              value={tutorInputValue}
+                              onSelect={() => {
+                                setFormData((prev) => ({ ...prev, tutorEmail: tutorInputValue }));
+                                setOpenTutor(false);
+                                setTutorInputValue("");
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.tutorEmail === tutorInputValue ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              Seleccionar "{tutorInputValue}"
+                            </CommandItem>
+                          )}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 flex flex-col">
                 <Label htmlFor="profesorEmail">Correos de Profesores (Opcional)</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="profesorEmail"
-                    type="email"
-                    placeholder="profesor@upqroo.edu.mx"
-                    value={profesorEmailInput}
-                    onChange={(e) => setProfesorEmailInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addProfesorEmail();
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="secondary" onClick={addProfesorEmail}>
-                    Añadir
-                  </Button>
+                  <Popover open={openProfesor} onOpenChange={setOpenProfesor}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openProfesor}
+                        className="w-full justify-between"
+                        disabled={isLoadingPersonal}
+                      >
+                        Seleccionar profesor...
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Buscar profesor por nombre o correo..." 
+                          value={profesorInputValue}
+                          onValueChange={setProfesorInputValue}
+                        />
+                        <CommandList>
+                          <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+                          <CommandGroup>
+                            {docentes.map((docente) => (
+                              <CommandItem
+                                key={docente.id}
+                                value={`${docente.name} ${docente.email}`}
+                                onSelect={() => {
+                                  const emailValue = docente.email || "";
+                                  if (emailValue && !formData.profesoresEmails.includes(emailValue)) {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      profesoresEmails: [...prev.profesoresEmails, emailValue]
+                                    }));
+                                  }
+                                  setOpenProfesor(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.profesoresEmails.includes(docente.email || "") ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {docente.name} ({docente.email})
+                              </CommandItem>
+                            ))}
+                            {emailRegex.test(profesorInputValue) && !docentes.find(d => d.email === profesorInputValue) && (
+                              <CommandItem
+                                value={profesorInputValue}
+                                onSelect={() => {
+                                  if (!formData.profesoresEmails.includes(profesorInputValue)) {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      profesoresEmails: [...prev.profesoresEmails, profesorInputValue]
+                                    }));
+                                  }
+                                  setOpenProfesor(false);
+                                  setProfesorInputValue("");
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.profesoresEmails.includes(profesorInputValue) ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                Seleccionar "{profesorInputValue}"
+                              </CommandItem>
+                            )}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.profesoresEmails.map((email, index) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                      {email}
+                      {docentes.find(d => d.email === email)?.name || email}
                       <button
                         type="button"
                         onClick={() => removeProfesorEmail(email)}
