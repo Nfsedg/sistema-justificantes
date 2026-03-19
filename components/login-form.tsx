@@ -26,8 +26,39 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 overflow-auto"
+      style={{
+        background: "linear-gradient(135deg, #1a0a00 0%, #3d1a00 40%, #7c3500 100%)",
+      }}
+    >
+      {/* Círculos decorativos */}
+      <div
+        className="absolute top-[-120px] left-[-120px] w-[450px] h-[450px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(251,146,60,0.25), transparent)",
+        }}
+      />
+      <div
+        className="absolute bottom-[-120px] right-[-120px] w-[450px] h-[450px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(234,88,12,0.2), transparent)",
+        }}
+      />
+      <div
+        className="absolute top-[35%] right-[8%] w-[220px] h-[220px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(251,146,60,0.12), transparent)",
+        }}
+      />
+      <div
+        className="absolute bottom-[20%] left-[5%] w-[180px] h-[180px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(253,186,116,0.1), transparent)",
+        }}
+      />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Logo y título */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
@@ -36,15 +67,15 @@ export function LoginForm() {
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">SIJE</h1>
-            <p className="text-lg text-muted-foreground">
+            <h1 className="text-3xl font-bold text-white">SIJE</h1>
+            <p className="text-lg text-orange-200">
               Sistema de Justificantes Estudiantiles
             </p>
           </div>
         </div>
 
         {/* Card de login */}
-        <Card className="border-0 shadow-xl">
+        <Card className="border-0 shadow-xl ring-1 ring-orange-300/30">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl">Bienvenido</CardTitle>
             <CardDescription>
@@ -98,10 +129,10 @@ export function LoginForm() {
 
         {/* Footer */}
         <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-orange-200">
             Universidad Politécnica de Quintana Roo
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-orange-300/70">
             Av. Arco Bicentenario MZ 11, Lote 1119-33, Cancún, Q. Roo
           </p>
         </div>
