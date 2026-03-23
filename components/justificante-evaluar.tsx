@@ -122,7 +122,7 @@ export function JustificanteEvaluar({
               <FileText className="w-3 h-3" /> Documento Adjunto
             </Label>
             <a
-              href={justificante.fileUrl}
+              href={`/api/justificantes/${justificante.id}/file`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 p-2 border rounded-md text-sm text-primary hover:bg-muted/50 transition-colors"
