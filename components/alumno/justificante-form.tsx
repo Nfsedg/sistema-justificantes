@@ -357,7 +357,7 @@ export function JustificanteForm() {
               <input
                 id="archivo"
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept=".pdf,image/*"
                 onChange={handleFileChange}
                 className="hidden"
               />

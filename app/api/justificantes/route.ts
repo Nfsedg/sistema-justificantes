@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
     }
 
-    if (file.type !== "application/pdf") {
-      return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 })
+    if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "Only PDF or image files allowed" }, { status: 400 })
     }
 
     // 📂 Guardar archivo

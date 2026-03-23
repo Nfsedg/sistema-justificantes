@@ -102,7 +102,13 @@ export default function useJustificantes(): useJustificantesReturn {
   const uploadJustificante = async (formData: FormDataInterface) => {
     setIsUploadingJustificante(true);
     try {
-      if (!formData.file) return
+      if (!formData.file) return;
+
+      const fileType = formData.file.type;
+      if (fileType !== "application/pdf" && !fileType.startsWith("image/")) {
+        throw new Error("Solo se aceptan archivos PDF o imágenes.");
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append("fechaInicio", formData.fechaInicio);
       formDataToSend.append("fechaFin", formData.fechaFin);
