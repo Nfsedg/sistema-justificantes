@@ -12,15 +12,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, GraduationCap, User2 } from "lucide-react";
-import Link from "next/link";
+// import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { NotificationBell } from "@/components/notification-bell";
 
-const USER_OPTIONS = [
-  { label: "Inicio", href: "/estudiante" },
-  { label: "Ver perfil", href: "/estudiante/perfil" },
-];
+// const USER_OPTIONS = [
+//   { label: "Inicio", href: "/estudiante" },
+//   { label: "Ver perfil", href: "/estudiante/perfil" },
+// ];
 
 export function Header() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   if (!user) return null;
 
@@ -42,6 +45,9 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          {(pathname === "/justificantes" || pathname === "/tutor") && (
+            <NotificationBell />
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -61,7 +67,7 @@ export function Header() {
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              {/* <DropdownMenuSeparator />
               {
                 USER_OPTIONS.map((option) => (
                   <Link key={option.href} href={option.href}>
@@ -70,7 +76,7 @@ export function Header() {
                     </DropdownMenuItem>
                   </Link>
                 ))
-              }
+              } */}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />

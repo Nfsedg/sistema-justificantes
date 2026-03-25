@@ -126,7 +126,7 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
             <Label className="text-muted-foreground">Documento Adjunto</Label>
             <div className="mt-1">
               <a
-                href={justificante.fileUrl}
+                href={`/api/justificantes/${justificante.id}/file`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-primary/10 px-3 py-2 rounded-md"
@@ -181,6 +181,7 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
                   <div className="flex gap-3 justify-end pt-2">
                     <Button
                       variant="destructive"
+                      className="bg-red-600 hover:bg-red-700 text-white"
                       onClick={() => handleAction("RECHAZAR")}
                       disabled={isLoading}
                     >
@@ -188,6 +189,7 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
                       Rechazar
                     </Button>
                     <Button
+                      className="bg-green-600 hover:bg-green-700 text-white"
                       onClick={() => handleAction("APROBAR")}
                       disabled={isLoading || selectedDocentes.length === 0}
                     >

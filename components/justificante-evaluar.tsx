@@ -122,7 +122,7 @@ export function JustificanteEvaluar({
               <FileText className="w-3 h-3" /> Documento Adjunto
             </Label>
             <a
-              href={justificante.fileUrl}
+              href={`/api/justificantes/${justificante.id}/file`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 p-2 border rounded-md text-sm text-primary hover:bg-muted/50 transition-colors"
@@ -155,9 +155,9 @@ export function JustificanteEvaluar({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          {/* <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cerrar
-          </Button>
+          </Button> */}
 
           {canEvaluate && (
             <div className="flex gap-2">
