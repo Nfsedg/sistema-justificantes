@@ -155,9 +155,9 @@ export function JustificanteEvaluar({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          {/* <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cerrar
-          </Button>
+          </Button> */}
 
           {canEvaluate && (
             <div className="flex gap-2">

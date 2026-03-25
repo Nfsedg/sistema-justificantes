@@ -110,6 +110,15 @@ export async function POST(req: NextRequest) {
               email: tutorEmail
             }
           })
+
+          await tx.notificacion.create({
+            data: {
+              usuarioEmail: tutorEmail,
+              mensaje: `Tienes un nuevo justificante pendiente de revisión por parte del estudiante.`,
+              tipo: "ASIGNACION",
+              justificanteId: justificante.id
+            }
+          })
         }
 
         // Profesores (etapa 2)

@@ -144,6 +144,15 @@ export async function POST(
                     email
                   }))
                 });
+
+                await tx.notificacion.createMany({
+                  data: profesoresFiltrados.map((email: string) => ({
+                    usuarioEmail: email,
+                    mensaje: `El tutor te ha asignado un nuevo justificante para evaluación.`,
+                    tipo: "ASIGNACION",
+                    justificanteId: justificanteId
+                  }))
+                });
               }
             } else if (etapaSiguiente.asignaciones.length === 0) {
               // Si no hay profesores y el estudiante tampoco, saltar? (Pendiente de reglas)

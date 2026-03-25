@@ -1,0 +1,14 @@
+
+model Notificacion {
+  id Int @id @default(autoincrement())
+  
+  usuarioEmail String
+  mensaje      String
+  leida        Boolean @default(false)
+  tipo         String @default("ASIGNACION")
+  
+  justificanteId Int?
+  justificante   Justificantes? @relation(fields: [justificanteId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
