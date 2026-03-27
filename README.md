@@ -18,31 +18,9 @@ Uses PRISMA ORM
 - Seed the database `pnpm prisma db seed`
 - Run the project `pnpm run dev`
 
-TODOS:
--Justificante
-Fecha de creación
-Ultima modificación
-Aprobado por
-Rechazado por
-Formato Creado
-
--Formato Justificante (Validar con Jhonatan)
-
--Sistema de envio de correos
-Correo estructurado a enviar
-Redirección a plataforma
-
--Tutor
-Generar Formato
-
--Profesores
-Ver justificantes "asignados" por estudiantes/tutores
-Cambiar de estatus el justificante
-Agregar notas
-Notificaciones
-
--Envio de Mailing cuando se asigna a profesor
--Exportación de datos (Excel/CSV)
+TODO
+-Envio de Mailing cuando se asigna a profesor con redirección a plataforma
+-Exportación de datos (Excel/CSV) TBD
 
 FLUJO default de envio de Justificante:
 Alumno -> Tutor (Genera Formato justificante) -> Maestros (Visto, Pendiente-Notas si requiere actividad adicional, Aprobado/Rechazado)

@@ -13,8 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { formatDate } from "date-fns";
-import { FileText, Calendar, Check, X, Loader2 } from "lucide-react";
+import { FileText, Calendar, Check, X, Loader2, FileSearch } from "lucide-react";
 import { toast } from "sonner"; // asumiendo que usan sonner según package.json
+import { JustificanteOficio } from "./justificante-oficio";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface JustificanteEvaluarProps {
   justificante: Justificante;
@@ -75,84 +77,102 @@ export function JustificanteEvaluar({
     }
   };
 
+  // Obtener el nombre del tutor de la primera etapa del workflow
+  const etapaTutor = workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
+  const tutorName = etapaTutor?.asignaciones?.[0]?.user?.name || "Tutor de grupo";
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalle del Justificante</DialogTitle>
           <DialogDescription>
-            Información enviada por el estudiante para justificar su inasistencia.
+            Información enviada por el estudiante y avalada por su tutor.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="flex gap-4 p-3 bg-muted/50 rounded-lg">
-            <div className="space-y-1 w-full">
-              <Label className="text-xs text-muted-foreground uppercase">Estudiante</Label>
-              <p className="font-medium">{justificante.estudiante?.name}</p>
-              <p className="text-sm text-muted-foreground">{justificante.estudiante?.email}</p>
-            </div>
-          </div>
+        <Tabs defaultValue="detalles" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="detalles">Información General</TabsTrigger>
+            <TabsTrigger value="oficio">Oficio del Tutor</TabsTrigger>
+          </TabsList>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <TabsContent value="detalles" className="grid gap-4 py-4">
+            <div className="flex gap-4 p-3 bg-muted/50 rounded-lg">
+              <div className="space-y-1 w-full">
+                <Label className="text-xs text-muted-foreground uppercase">Estudiante</Label>
+                <p className="font-medium">{justificante.estudiante?.name}</p>
+                <p className="text-sm text-muted-foreground">{justificante.estudiante?.email}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground uppercase flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> Fecha Inicio
+                </Label>
+                <p className="font-medium">{formatDate(new Date(justificante.fechaInicio), "dd MMM yyyy")}</p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground uppercase flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> Fecha Fin
+                </Label>
+                <p className="font-medium">{formatDate(new Date(justificante.fechaFin), "dd MMM yyyy")}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase">Motivo y Descripción</Label>
+              <div className="p-3 border rounded-md bg-background">
+                <p className="font-medium mb-1">{justificante.motivo}</p>
+                <p className="text-sm text-muted-foreground">{justificante.descripcion || "Sin descripción adicional"}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-xs text-muted-foreground uppercase flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> Fecha Inicio
+                <FileText className="w-3 h-3" /> Evidencia Original
               </Label>
-              <p className="font-medium">{formatDate(new Date(justificante.fechaInicio), "dd MMM yyyy")}</p>
+              <a
+                href={`/api/justificantes/${justificante.id}/file`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 p-2 border rounded-md text-sm text-primary hover:bg-muted/50 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Ver Documento PDF del Alumno
+              </a>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground uppercase flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> Fecha Fin
-              </Label>
-              <p className="font-medium">{formatDate(new Date(justificante.fechaFin), "dd MMM yyyy")}</p>
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground uppercase">Motivo y Descripción</Label>
-            <div className="p-3 border rounded-md bg-background">
-              <p className="font-medium mb-1">{justificante.motivo}</p>
-              <p className="text-sm text-muted-foreground">{justificante.descripcion || "Sin descripción adicional"}</p>
-            </div>
-          </div>
+            {canEvaluate ? (
+              <div className="space-y-2 mt-2">
+                <Label htmlFor="observaciones">Observaciones (Opcional)</Label>
+                <Textarea
+                  id="observaciones"
+                  placeholder="Escribe algún comentario o justificación de tu decisión..."
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="p-3 bg-blue-50/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-md text-sm mt-2 border border-blue-100 dark:border-blue-800">
+                <p className="font-medium mb-1">Estado de evaluación</p>
+                {!etapaActiva
+                  ? "Este justificante no tiene ninguna etapa de evaluación activa."
+                  : !asignacionUsuario
+                    ? "No estás asignado para evaluar en esta etapa."
+                    : `Ya has evaluado este justificante (${asignacionUsuario.estado}).`}
+              </div>
+            )}
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground uppercase flex items-center gap-1">
-              <FileText className="w-3 h-3" /> Documento Adjunto
-            </Label>
-            <a
-              href={`/api/justificantes/${justificante.id}/file`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 p-2 border rounded-md text-sm text-primary hover:bg-muted/50 transition-colors"
-            >
-              <FileText className="w-4 h-4" />
-              Ver Documento PDF
-            </a>
-          </div>
-
-          {canEvaluate ? (
-            <div className="space-y-2 mt-2">
-              <Label htmlFor="observaciones">Observaciones (Opcional)</Label>
-              <Textarea
-                id="observaciones"
-                placeholder="Escribe algún comentario o justificación de tu decisión..."
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
-              />
-            </div>
-          ) : (
-            <div className="p-3 bg-blue-50/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-md text-sm mt-2 border border-blue-100 dark:border-blue-800">
-              <p className="font-medium mb-1">Estado de evaluación</p>
-              {!etapaActiva
-                ? "Este justificante no tiene ninguna etapa de evaluación activa."
-                : !asignacionUsuario
-                  ? "No estás asignado para evaluar en esta etapa."
-                  : `Ya has evaluado este justificante (${asignacionUsuario.estado}).`}
-            </div>
-          )}
-        </div>
+          <TabsContent value="oficio" className="py-4">
+            <JustificanteOficio 
+              justificante={justificante} 
+              tutorName={tutorName} 
+            />
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter className="gap-2 sm:gap-0">
           {/* <Button variant="outline" onClick={() => setIsOpen(false)}>
