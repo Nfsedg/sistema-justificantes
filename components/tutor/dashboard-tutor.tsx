@@ -89,13 +89,6 @@ export function DashboardTutor() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Panel del Tutor</h2>
-        <p className="text-muted-foreground mt-2">
-          Revisa y aprueba los justificantes de tus alumnos tutorados.
-        </p>
-      </div>
-
       <Tabs defaultValue="pendientes" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md mb-6">
           <TabsTrigger value="pendientes">Pendientes ({pendientes.length})</TabsTrigger>

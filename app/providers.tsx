@@ -15,11 +15,11 @@ function AppLayout({ children }: { children: ReactNode }) {
   const showHeader = Boolean(user) && pathname !== '/';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {showHeader && <Header />}
-      <div className="container mx-auto px-4 py-6">
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
         {children}
-      </div>
+      </main>
       <Toaster />
     </div>
   );
