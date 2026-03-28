@@ -20,6 +20,15 @@ function isNumericLocalPart(email: string): boolean {
   return /^[0-9]+$/.test(localPart);
 }
 
+const COORDINATOR_EMAILS = [
+  "ing.software@upqroo.edu.mx",
+  "lic.terapiafisica@upqroo.edu.mx",
+  "ing.biomedica@upqroo.edu.mx",
+  "ing.financiera@upqroo.edu.mx",
+  "ing.biotecnologia@upqroo.edu.mx",
+  "coordinator@upqroo.edu.mx",
+];
+
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
@@ -47,10 +56,10 @@ export const authOptions: NextAuthOptions = {
         newRole = "TUTOR";
       } else if (isDev && devCoordinatorEmail && user.email === devCoordinatorEmail) {
         newRole = "COORDINADOR";
+      } else if (COORDINATOR_EMAILS.includes(user.email)) {
+        newRole = "COORDINADOR";
       } else if (isNumericLocalPart(user.email)) {
         newRole = "ESTUDIANTE";
-      } else if (user.email === "coordinator@upqroo.edu.mx") {
-        newRole = "COORDINADOR";
       }
       
       await prisma.user.update({
@@ -97,6 +106,8 @@ export const authOptions: NextAuthOptions = {
         if (process.env.DEV_TUTOR_EMAIL && token.email === process.env.DEV_TUTOR_EMAIL) {
           token.role = "TUTOR";
         } else if (process.env.DEV_COORDINATOR_EMAIL && token.email === process.env.DEV_COORDINATOR_EMAIL) {
+          token.role = "COORDINADOR";
+        } else if (COORDINATOR_EMAILS.includes(token.email)) {
           token.role = "COORDINADOR";
         }
       }
