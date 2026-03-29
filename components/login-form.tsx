@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export function LoginForm() {
   const { loginWithGoogle, isLoading } = useAuth();
@@ -62,8 +63,15 @@ export function LoginForm() {
         {/* Logo y título */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-primary shadow-lg">
-              <GraduationCap className="w-12 h-12 text-primary-foreground" />
+            <div className="flex items-center justify-center">
+              <Image 
+                src="/logo_upqroo_150.png" 
+                alt="Logo UPQROO" 
+                width={80} 
+                height={80} 
+                className="object-contain"
+                priority
+              />
             </div>
           </div>
           <div>

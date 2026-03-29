@@ -11,8 +11,12 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 1. Rutas públicas de API y archivos estáticos (las dejamos pasar siempre)
-  const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico"];
-  if (publicApiPaths.some((path) => pathname.startsWith(path))) {
+  const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico", "/logo_upqroo_150.png"];
+  
+  // También permitir cualquier archivo con extensión común de imagen/estático
+  const isStaticFile = pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/i);
+  
+  if (publicApiPaths.some((path) => pathname.startsWith(path)) || isStaticFile) {
     return NextResponse.next();
   }
 
@@ -77,6 +81,14 @@ export async function proxy(req: NextRequest) {
 // Configuración sobre qué rutas inspecciona el middleware.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - also exclude any path with a dot (static files in public/)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };
