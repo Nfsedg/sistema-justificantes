@@ -307,9 +307,18 @@ export function JustificanteForm() {
             <div className="space-y-2">
               <Label>Selecciona las fechas a justificar*</Label>
               <DateRangePicker
-                date={{ from: new Date(formData.fechaInicio), to: new Date(formData.fechaFin) }}
+                date={{ 
+                  from: formData.fechaInicio ? new Date(formData.fechaInicio) : undefined, 
+                  to: formData.fechaFin ? new Date(formData.fechaFin) : undefined 
+                }}
                 setDate={(date) => {
-                  setFormData((prev) => ({ ...prev, fechaInicio: date?.from?.toISOString() || "", fechaFin: date?.to?.toISOString() || "" }));
+                  const from = date?.from?.toISOString() || "";
+                  const to = date?.to?.toISOString() || from;
+                  setFormData((prev) => ({ 
+                    ...prev, 
+                    fechaInicio: from, 
+                    fechaFin: to 
+                  }));
                 }} />
             </div>
           </div>
