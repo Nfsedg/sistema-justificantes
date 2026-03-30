@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -66,8 +66,9 @@ export async function proxy(req: NextRequest) {
 
     // Verificar si el rol tiene permiso para acceder a la ruta actual
     const allowedPrefixes = rolePaths[role] || [];
-    const isAllowed = allowedPrefixes.some(prefix => pathname.startsWith(prefix));
-
+    // Todas las sesiones con token pueden acceder a /docs
+    const isAllowed = allowedPrefixes.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith("/docs");
+    
     // Si la ruta no le pertenece, se le bloquea y se le envía a su respectivo dashboard
     if (!isAllowed) {
       return NextResponse.redirect(new URL(defaultRoleDashboard, req.url));
