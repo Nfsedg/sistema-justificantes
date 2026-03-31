@@ -18,6 +18,21 @@ Uses PRISMA ORM
 - Seed the database `pnpm prisma db seed`
 - Run the project `pnpm run dev`
 
+## DEPLOYMENT
+
+El proyecto se encuentra desplegado en los servidores de la UPQROO y con conexión a MySQL local dentro del mismo servidor.
+Para desplegar el proyecto se debe seguir los siguientes pasos:
+
+- Ingresar al servidor de la universidad (Preguntar por las credenciales para ingresar)
+- Conectarse al servidor y moverse a la carpeta del proyecto `cd /var/www/appsupqroo/sistema-justificantes/`
+- Hacer pull de los últimos cambios `git pull origin master` (utilizar `sudo git pull origin master` si surge un error similar: `fatal: detected dubious ownership in repository at '/var/www/appsupqroo/sistema-justificantes'`)
+- Crear, editar o validar las variables de entorno `.env`.
+- Actualizar la base de datos `pnpm prisma migrate deploy`
+- Si es el primer despliegue, hacer seed a la base de datos `pnpm prisma db seed`
+- Hacer build del proyecto `pnpm run build`
+- Crear o reiniciar la instancia de pm2 `pm2 start npm --name "sistema-justificantes" -- start -- --port 3100` o `pm2 restart sistema-justificantes`
+- Validar que la página se encuentre funcionando y actualizado
+
 TODO
 -Envio de Mailing cuando se asigna a profesor con redirección a plataforma
 -Exportación de datos (Excel/CSV) TBD
