@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "cross-env PORT=3100 next start"
+    "start": "PORT=3100 next start"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
