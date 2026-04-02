@@ -28,10 +28,15 @@ Para desplegar el proyecto se debe seguir los siguientes pasos:
 - Hacer pull de los últimos cambios `git pull origin master` (utilizar `sudo git pull origin master` si surge un error similar: `fatal: detected dubious ownership in repository at '/var/www/appsupqroo/sistema-justificantes'`)
 - Crear, editar o validar las variables de entorno `.env`.
 - Actualizar la base de datos `pnpm prisma migrate deploy`
-- Si es el primer despliegue, hacer seed a la base de datos `pnpm prisma db seed`
+- Si es el PRIMER despliegue, hacer seed a la base de datos `pnpm prisma db seed`
 - Hacer build del proyecto `pnpm run build`
-- Crear o reiniciar la instancia de pm2 `pm2 start npm --name "sistema-justificantes" -- start -- --port 3100` o `pm2 restart sistema-justificantes`
+- Crear o reiniciar la instancia de pm2 `pm2 start npm --name "sistema-justificantes" -- start` o `pm2 restart sistema-justificantes`
 - Validar que la página se encuentre funcionando y actualizado
+
+### Troubleshooting:
+
+- Si tienes algún error al instalar o correr el proyecto en el servidor, validar que la versión de node sea la correcta. Puedes utilizar `nvm` para manejar las versiones de node con tu usuario del servidor.
+- Si usas `sudo` al ejecutar algún comando `npm` `pnpm` o relacionado con node, se puede user otra versión de node distinta a la instalada en el usuario del servidor.
 
 TODO
 -Envio de Mailing cuando se asigna a profesor con redirección a plataforma
