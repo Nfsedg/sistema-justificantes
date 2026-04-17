@@ -17,7 +17,7 @@ export function usePersonalAcademico() {
   const getPersonal = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/users?roles=DOCENTE,TUTOR');
+      const response = await fetch('/justificantes/api/users?roles=DOCENTE,TUTOR');
       if (!response.ok) {
         throw new Error("Error al obtener personal académico");
       }

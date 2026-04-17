@@ -9,7 +9,7 @@ export default function useUsers() {
   const getUsers = useCallback(async (role?: string) => {
     setIsLoading(true);
     try {
-      const url = role ? `/api/users?role=${role}` : '/api/users';
+      const url = role ? `/justificantes/api/users?role=${role}` : '/justificantes/api/users';
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Error al obtener usuarios");
@@ -27,7 +27,7 @@ export default function useUsers() {
 
   const updateUserRole = async (userId: string, newRole: "DOCENTE" | "TUTOR") => {
     try {
-      const response = await fetch(`/api/users/${userId}/role`, {
+      const response = await fetch(`/justificantes/api/users/${userId}/role`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: newRole }),

@@ -28,7 +28,7 @@ export function DashboardStaff() {
   const fetchJustificantes = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/justificantes");
+      const res = await fetch("/justificantes/api/justificantes");
       if (res.ok) {
         const data = await res.json();
         setJustificantes(data);

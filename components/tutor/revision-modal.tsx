@@ -135,7 +135,7 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
               <Label className="text-muted-foreground">Evidencia (Archivo del Alumno)</Label>
               <div className="mt-1">
                 <a
-                  href={`/api/justificantes/${justificante.id}/file`}
+                  href={`/justificantes/api/justificantes/${justificante.id}/file`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm text-primary hover:underline bg-primary/10 px-3 py-2 rounded-md"

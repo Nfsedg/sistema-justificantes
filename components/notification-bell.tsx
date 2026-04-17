@@ -20,7 +20,7 @@ export function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("/api/notificaciones");
+      const res = await fetch("/justificantes/api/notificaciones");
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -38,7 +38,7 @@ export function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch("/api/notificaciones", { method: "PATCH", body: JSON.stringify({}) });
+      await fetch("/justificantes/api/notificaciones", { method: "PATCH", body: JSON.stringify({}) });
       setNotifications([]);
     } catch (e) {
       console.error(e);
@@ -47,7 +47,7 @@ export function NotificationBell() {
 
   const markAsRead = async (id: number) => {
     try {
-      await fetch("/api/notificaciones", {
+      await fetch("/justificantes/api/notificaciones", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),

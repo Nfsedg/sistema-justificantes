@@ -51,7 +51,7 @@ export function JustificanteEvaluar({
   const handleEvaluate = async (action: "APROBAR" | "RECHAZAR") => {
     try {
       setLoadingAction(action);
-      const res = await fetch(`/api/justificantes/${justificante.id}/workflow`, {
+      const res = await fetch(`/justificantes/api/justificantes/${justificante.id}/workflow`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export function JustificanteEvaluar({
                 <FileText className="w-3 h-3" /> Evidencia Original
               </Label>
               <a
-                href={`/api/justificantes/${justificante.id}/file`}
+                href={`/justificantes/api/justificantes/${justificante.id}/file`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 p-2 border rounded-md text-sm text-primary hover:bg-muted/50 transition-colors"
