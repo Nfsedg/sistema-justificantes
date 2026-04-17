@@ -27,7 +27,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider refetchOnWindowFocus={false}>
+    <SessionProvider basePath="/justificantes/api/auth" refetchOnWindowFocus={false}>
       <AuthProvider>
         <AppLayout>{children}</AppLayout>
       </AuthProvider>
