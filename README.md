@@ -37,13 +37,13 @@ Para desplegar el proyecto se debe seguir los siguientes pasos:
 Para que la aplicación sea accesible en `https://apps.upqroo.edu.mx/justificantes`, se debe configurar el VirtualHost de Apache de la siguiente manera:
 
 1.  Habilitar módulos necesarios:
-    ```bash
-    sudo a2enmod proxy proxy_http
-    sudo systemctl restart apache2
-    ```
+```bash
+sudo a2enmod proxy proxy_http
+sudo systemctl restart apache2
+```
 
 2.  Editar el archivo de configuración del sitio (ej. `/etc/apache2/sites-available/apps-ssl.conf`):
-
+    
 ```apache
 <VirtualHost *:443>
     ServerName apps.upqroo.edu.mx
@@ -79,9 +79,9 @@ Para que la aplicación sea accesible en `https://apps.upqroo.edu.mx/justificant
 - **Permisos**: Si usas `sudo` para comandos npm/pnpm, asegúrate de que el usuario tenga los permisos correctos sobre la carpeta `.next`.
 - **404 en assets**: Asegúrate de haber hecho el `build` después de agregar el `basePath` en `next.config.mjs`.
 
-TODO
+#### TODOs
 -Envio de Mailing cuando se asigna a profesor con redirección a plataforma
 -Exportación de datos (Excel/CSV) TBD
 
-FLUJO default de envio de Justificante:
+#### FLUJO default de envio de Justificante:
 Alumno -> Tutor (Genera Formato justificante) -> Maestros (Visto, Pendiente-Notas si requiere actividad adicional, Aprobado/Rechazado)
