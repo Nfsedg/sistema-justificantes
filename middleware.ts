@@ -27,7 +27,8 @@ export async function middleware(req: NextRequest) {
   if (!token) {
     if (!isAuthRoute) {
       // Si intenta ir a una ruta privada sin sesión, mandar al login
-      let loginUrl = new URL("/login", req.url);
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -56,7 +57,9 @@ export async function middleware(req: NextRequest) {
 
     // Si un usuario logueado intenta ir al /login o la ruta raíz /, redirigirlo directamente a su dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(defaultRoleDashboard, req.url));
+      const url = req.nextUrl.clone();
+      url.pathname = defaultRoleDashboard;
+      return NextResponse.redirect(url);
     }
 
     // Permitir todas las peticiones a la API si ya está logueado
@@ -71,7 +74,9 @@ export async function middleware(req: NextRequest) {
     
     // Si la ruta no le pertenece, se le bloquea y se le envía a su respectivo dashboard
     if (!isAllowed) {
-      return NextResponse.redirect(new URL(defaultRoleDashboard, req.url));
+      const url = req.nextUrl.clone();
+      url.pathname = defaultRoleDashboard;
+      return NextResponse.redirect(url);
     }
   }
 
