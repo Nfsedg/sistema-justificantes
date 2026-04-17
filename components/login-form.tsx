@@ -65,7 +65,7 @@ export function LoginForm() {
           <div className="flex justify-center">
             <div className="flex items-center justify-center">
               <Image 
-                src="/logo_upqroo_150.png" 
+                src="/justificantes/logo_upqroo_150.png" 
                 alt="Logo UPQROO" 
                 width={80} 
                 height={80} 
