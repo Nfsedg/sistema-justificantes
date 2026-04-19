@@ -4,6 +4,7 @@ async function main() {
   await prisma.workflow.create({
   data: {
     nombre: "Justificantes Default",
+    isDefault: true,
     etapas: {
       create: [
         {

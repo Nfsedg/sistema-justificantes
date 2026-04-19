@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -11,8 +11,12 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 1. Rutas públicas de API y archivos estáticos (las dejamos pasar siempre)
-  const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico"];
-  if (publicApiPaths.some((path) => pathname.startsWith(path))) {
+  const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico", "/logo_upqroo_150.png"];
+  
+  // También permitir cualquier archivo con extensión común de imagen/estático
+  const isStaticFile = pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/i);
+  
+  if (publicApiPaths.some((path) => pathname.startsWith(path)) || isStaticFile) {
     return NextResponse.next();
   }
 
@@ -23,7 +27,8 @@ export async function proxy(req: NextRequest) {
   if (!token) {
     if (!isAuthRoute) {
       // Si intenta ir a una ruta privada sin sesión, mandar al login
-      let loginUrl = new URL("/login", req.url);
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -52,7 +57,9 @@ export async function proxy(req: NextRequest) {
 
     // Si un usuario logueado intenta ir al /login o la ruta raíz /, redirigirlo directamente a su dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(defaultRoleDashboard, req.url));
+      const url = req.nextUrl.clone();
+      url.pathname = defaultRoleDashboard;
+      return NextResponse.redirect(url);
     }
 
     // Permitir todas las peticiones a la API si ya está logueado
@@ -62,11 +69,14 @@ export async function proxy(req: NextRequest) {
 
     // Verificar si el rol tiene permiso para acceder a la ruta actual
     const allowedPrefixes = rolePaths[role] || [];
-    const isAllowed = allowedPrefixes.some(prefix => pathname.startsWith(prefix));
-
+    // Todas las sesiones con token pueden acceder a /docs
+    const isAllowed = allowedPrefixes.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith("/docs");
+    
     // Si la ruta no le pertenece, se le bloquea y se le envía a su respectivo dashboard
     if (!isAllowed) {
-      return NextResponse.redirect(new URL(defaultRoleDashboard, req.url));
+      const url = req.nextUrl.clone();
+      url.pathname = defaultRoleDashboard;
+      return NextResponse.redirect(url);
     }
   }
 
@@ -77,6 +87,14 @@ export async function proxy(req: NextRequest) {
 // Configuración sobre qué rutas inspecciona el middleware.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - also exclude any path with a dot (static files in public/)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };

@@ -38,14 +38,16 @@ model Justificantes {
   fileUrl     String
 
   workflowInstancia WorkflowInstancia?
+  notificaciones    Notificacion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Workflow {
-  id     Int    @id @default(autoincrement())
-  nombre String
+  id        Int     @id @default(autoincrement())
+  nombre    String
+  isDefault Boolean @default(false)
 
   etapas WorkflowEtapa[]
 

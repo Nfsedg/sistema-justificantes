@@ -21,6 +21,8 @@ export function DateRangePicker({
   date,
   setDate,
 }: DateRangePickerProps) {
+  const isValidDate = (d: any) => d instanceof Date && !isNaN(d.getTime());
+
   return (
     <Field className="w-full">
       <Popover>
@@ -31,8 +33,8 @@ export function DateRangePicker({
             className="justify-start px-2.5 font-normal"
           >
             <CalendarIcon />
-            {date?.from ? (
-              date.to ? (
+            {date?.from && isValidDate(date.from) ? (
+              date.to && isValidDate(date.to) ? (
                 <>
                   {format(date.from, "LLL dd, y")} -{" "}
                   {format(date.to, "LLL dd, y")}

@@ -14,16 +14,28 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (token.role !== "COORDINADOR") {
-      return NextResponse.json({ error: "Solo los coordinadores pueden realizar esta acción" }, { status: 403 })
-    }
-
     const { searchParams } = new URL(req.url)
     const roleParam = searchParams.get("role")
+    const rolesParam = searchParams.get("roles")
+
+    if (token.role !== "COORDINADOR") {
+      const isStudentFetchingTeachers = token.role === "ESTUDIANTE" && 
+        ((roleParam === "DOCENTE" || roleParam === "TUTOR") || 
+         (rolesParam && rolesParam.split(',').every(r => r === "DOCENTE" || r === "TUTOR")));
+
+      if (!isStudentFetchingTeachers) {
+        return NextResponse.json({ error: "Solo los coordinadores pueden realizar esta acción" }, { status: 403 })
+      }
+    }
 
     const queryWhere: any = {}
     if (roleParam && Object.values(Role).includes(roleParam as Role)) {
       queryWhere.role = roleParam as Role
+    } else if (rolesParam) {
+      const rolesArray = rolesParam.split(',').filter(r => Object.values(Role).includes(r as Role)) as Role[];
+      if (rolesArray.length > 0) {
+        queryWhere.role = { in: rolesArray }
+      }
     }
 
     const users = await prisma.user.findMany({

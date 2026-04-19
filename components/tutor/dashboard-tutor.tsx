@@ -17,7 +17,7 @@ export function DashboardTutor() {
 
   const fetchJustificantes = async () => {
     try {
-      const res = await fetch("/api/justificantes");
+      const res = await fetch("/justificantes/api/justificantes");
       if (res.ok) {
         const data = await res.json();
         setJustificantes(data);
@@ -31,7 +31,7 @@ export function DashboardTutor() {
     try {
       // Necesitamos un endpoint que nos de los usuarios con rol DOCENTE.
       // Usaremos el endpoint específico /api/users/docentes
-      const res = await fetch("/api/users/docentes");
+      const res = await fetch("/justificantes/api/users/docentes");
       if (res.ok) {
         const allUsers = await res.json();
         // El endpoint /api/users/docentes ya devuelve filtrados por DOCENTE
@@ -53,7 +53,7 @@ export function DashboardTutor() {
 
   const updateJustificanteWorkflow = async (id: number, data: any) => {
     try {
-      const res = await fetch(`/api/justificantes/${id}/workflow`, {
+      const res = await fetch(`/justificantes/api/justificantes/${id}/workflow`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -89,13 +89,6 @@ export function DashboardTutor() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Panel del Tutor</h2>
-        <p className="text-muted-foreground mt-2">
-          Revisa y aprueba los justificantes de tus alumnos tutorados.
-        </p>
-      </div>
-
       <Tabs defaultValue="pendientes" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md mb-6">
           <TabsTrigger value="pendientes">Pendientes ({pendientes.length})</TabsTrigger>

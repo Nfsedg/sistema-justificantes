@@ -1,3 +1,8 @@
+---
+title: Flujo de Aprobación
+order: 2
+---
+
 # Sistema de Justificantes – Documentación Funcional y Técnica
 
 ## 1. Descripción General

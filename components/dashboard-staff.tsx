@@ -28,7 +28,7 @@ export function DashboardStaff() {
   const fetchJustificantes = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/justificantes");
+      const res = await fetch("/justificantes/api/justificantes");
       if (res.ok) {
         const data = await res.json();
         setJustificantes(data);
@@ -73,23 +73,6 @@ export function DashboardStaff() {
 
   return (
     <div className="space-y-6">
-      {/* Bienvenida */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          {isCoordinador ? "Panel de Coordinación" : "Panel de Consulta y Evaluación"}
-        </h1>
-        <p className="text-muted-foreground">
-          {isCoordinador ? (
-            <>
-              <GraduationCap className="inline w-4 h-4 mr-1" />
-              Coordinador
-            </>
-          ) : (
-            `Consulta y evaluación de justificantes asignados (${user?.role})`
-          )}
-        </p>
-      </div>
-
       {/* Estadísticas */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

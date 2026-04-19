@@ -47,7 +47,7 @@ export default function useJustificantes(): useJustificantesReturn {
   const getDocentes = async () => {
     setIsLoadingDocentes(true);
     try {
-      const response = await fetch("/api/users/docentes");
+      const response = await fetch("/justificantes/api/users/docentes");
       if (!response.ok) throw new Error("Failed to fetch docentes");
       const data = await response.json();
       setDocentes(data);
@@ -60,7 +60,7 @@ export default function useJustificantes(): useJustificantesReturn {
 
   const updateJustificanteWorkflow = async (id: number, actionData: { action: "APROBAR" | "RECHAZAR", observaciones?: string, profesoresEmails?: string[] }) => {
     try {
-      const response = await fetch(`/api/justificantes/${id}/workflow`, {
+      const response = await fetch(`/justificantes/api/justificantes/${id}/workflow`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(actionData)
@@ -81,7 +81,7 @@ export default function useJustificantes(): useJustificantesReturn {
   const getJustificantes = async () => {
     setIsLoadingJustificantes(true);
     try {
-      const response = await fetch("/api/justificantes");
+      const response = await fetch("/justificantes/api/justificantes");
       if (!response.ok) {
         throw new Error("Failed to fetch justificantes");
       }
@@ -102,7 +102,13 @@ export default function useJustificantes(): useJustificantesReturn {
   const uploadJustificante = async (formData: FormDataInterface) => {
     setIsUploadingJustificante(true);
     try {
-      if (!formData.file) return
+      if (!formData.file) return;
+
+      const fileType = formData.file.type;
+      if (fileType !== "application/pdf" && !fileType.startsWith("image/")) {
+        throw new Error("Solo se aceptan archivos PDF o imágenes.");
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append("fechaInicio", formData.fechaInicio);
       formDataToSend.append("fechaFin", formData.fechaFin);
@@ -112,7 +118,7 @@ export default function useJustificantes(): useJustificantesReturn {
       formDataToSend.append("profesoresEmails", JSON.stringify(formData.profesoresEmails));
       formDataToSend.append("file", formData.file);
 
-      const response = await fetch("/api/justificantes", {
+      const response = await fetch("/justificantes/api/justificantes", {
         method: "POST",
         body: formDataToSend,
       });

@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    signOut();
+    signOut({ callbackUrl: "/justificantes/login" });
   };
 
   // Función solo para demo - permite cambiar de rol fácilmente

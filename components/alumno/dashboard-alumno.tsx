@@ -27,12 +27,6 @@ export function DashboardAlumno() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xl">
-          Gestiona tus justificantes de ausencia
-        </p>
-      </div>
-
       {/* Tabs */}
       <Tabs defaultValue="en-proceso" className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-2xl">
