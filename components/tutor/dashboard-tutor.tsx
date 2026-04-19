@@ -29,12 +29,9 @@ export function DashboardTutor() {
 
   const fetchDocentes = async () => {
     try {
-      // Necesitamos un endpoint que nos de los usuarios con rol DOCENTE.
-      // Usaremos el endpoint específico /api/users/docentes
       const res = await fetch("/justificantes/api/users/docentes");
       if (res.ok) {
         const allUsers = await res.json();
-        // El endpoint /api/users/docentes ya devuelve filtrados por DOCENTE
         setDocentes(allUsers);
       }
     } catch (e) {
@@ -72,7 +69,6 @@ export function DashboardTutor() {
     }
   };
 
-  // Filter justificantes: Pending vs Completed based on Tutor's step
   const pendientes = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
@@ -102,6 +98,8 @@ export function DashboardTutor() {
             title="Justificantes por Revisar"
             description="Justificantes que requieren tu aprobación y asignación a profesores."
             onViewDetails={(j) => setSelectedJustificante(j)}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
           />
         </TabsContent>
 
@@ -112,6 +110,8 @@ export function DashboardTutor() {
             title="Justificantes Revisados"
             description="Historial de justificantes que ya has aprobado o rechazado."
             onViewDetails={(j) => setSelectedJustificante(j)}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
           />
         </TabsContent>
       </Tabs>
