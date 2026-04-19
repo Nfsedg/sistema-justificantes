@@ -24,6 +24,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "date-fns";
 
 interface JustificantesListProps {
@@ -34,8 +35,26 @@ interface JustificantesListProps {
   onViewDetails?: (justificante: Justificante) => void;
 }
 
-// USE SAME COMPONENT FOR ADMIN/COORDINATOR AND STUDENT VIEWS
-// The isAlumnoView prop determines if the view is for students or for admin/coordinators
+function EstatusBadge({ justificante }: { justificante: Justificante }) {
+  const estado = justificante.workflowInstancia?.estado;
+
+  if (!estado) {
+    return <Badge variant="outline" className="text-xs">Sin estado</Badge>;
+  }
+
+  switch (estado) {
+    case "APROBADO":
+      return <Badge className="text-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aprobado</Badge>;
+    case "RECHAZADO":
+      return <Badge className="text-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Declinado</Badge>;
+    case "DEVUELTO":
+      return <Badge className="text-xs bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Devuelto</Badge>;
+    case "PENDIENTE":
+      return <Badge className="text-xs bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">Pendiente</Badge>;
+    default:
+      return <Badge variant="outline" className="text-xs">{estado}</Badge>;
+  }
+}
 
 export function JustificantesList({
   justificantes,
@@ -93,15 +112,14 @@ export function JustificantesList({
                 <TableHead>Fecha Ausencia</TableHead>
                 <TableHead>Motivo</TableHead>
                 <TableHead>Documento</TableHead>
+                <TableHead>Estatus</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredJustificantes.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell className="h-24 text-center text-muted-foreground">
                     No se encontraron justificantes
                   </TableCell>
                 </TableRow>
@@ -149,6 +167,9 @@ export function JustificantesList({
                           Sin archivo
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <EstatusBadge justificante={j} />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(j)}>
