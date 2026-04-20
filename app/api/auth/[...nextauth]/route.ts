@@ -81,10 +81,14 @@ export const authOptions: NextAuthOptions = {
     async signIn({ account, profile }: any) {
       if (account.provider === "google") {
         const isDev = process.env.NODE_ENV === 'development';
-        if (isDev) {
-          return profile.email_verified;
+        const isAllowed = isDev ? profile.email_verified : (profile.email_verified && profile.email.endsWith("@upqroo.edu.mx"));
+        
+        if (!isAllowed) {
+          // Redirigir explícitamente a la raíz (que es /justificantes por el basePath)
+          // Esto asegura que se respete el basePath y se mantenga al usuario en el flujo de login.
+          return "/?error=AccessDenied";
         }
-        return profile.email_verified && profile.email.endsWith("@upqroo.edu.mx");
+        return true;
       }
       return false;
     },

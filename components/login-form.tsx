@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +15,30 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 
 export function LoginForm() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#1a0a00]">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+
+function LoginFormContent() {
   const { loginWithGoogle, isLoading } = useAuth();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "AccessDenied") {
+      setError("Acceso denegado. Debes usar tu correo institucional @upqroo.edu.mx.");
+    } else if (errorParam) {
+      setError("Ocurrió un error al intentar iniciar sesión. Por favor intenta de nuevo.");
+    }
+  }, [searchParams]);
 
   const handleGoogleLogin = async () => {
     setError(null);
