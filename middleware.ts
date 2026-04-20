@@ -2,14 +2,19 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+const BASE_PATH = "/justificantes";
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+const sessionCookieName = `${cookiePrefix}next-auth.session-token`;
+
 export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET!,
+    cookieName: sessionCookieName,
   });
 
   const { pathname } = req.nextUrl;
-  const basePath = req.nextUrl.basePath || "";
   const isDev = process.env.NODE_ENV === 'development';
 
   if (isDev) {
@@ -35,8 +40,8 @@ export async function middleware(req: NextRequest) {
       // Si intenta ir a una ruta privada sin sesión, mandar al login
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
-      // Asegurar que el callbackUrl incluya el basePath si existe
-      loginUrl.searchParams.set("callbackUrl", basePath + pathname);
+      // Asegurar que el callbackUrl incluya el basePath
+      loginUrl.searchParams.set("callbackUrl", BASE_PATH + pathname);
       return NextResponse.redirect(loginUrl);
     }
     // Si intenta ir a /login o /, lo dejamos (para que pueda iniciar sesión)

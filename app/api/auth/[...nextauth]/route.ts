@@ -43,6 +43,10 @@ function determineRole(email: string): "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" 
   return "DOCENTE";
 }
 
+const BASE_PATH = "/justificantes";
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
@@ -59,6 +63,65 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
     error: '/auth/error',
+  },
+  // ✅ Configurar el path de las cookies para que coincida con el basePath de Next.js.
+  // Sin esto, las cookies se guardan en "/" y el middleware no las encuentra
+  // cuando la app está montada en "/justificantes".
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
+    state: {
+      name: `${cookiePrefix}next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
+    nonce: {
+      name: `${cookiePrefix}next-auth.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: BASE_PATH,
+        secure: useSecureCookies,
+      },
+    },
   },
   events: {
     async createUser({ user }) {
