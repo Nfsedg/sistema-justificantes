@@ -58,18 +58,18 @@ export async function middleware(req: NextRequest) {
     // porque el middleware ya recibe la ruta relativa al basePath.
     const rolePaths: Record<string, string[]> = {
       "ESTUDIANTE": ["/estudiante"],
-      "DOCENTE": ["/"], // El dashboard del docente es la raíz del basePath
+      "DOCENTE": ["/justificantes"], // El dashboard del docente es /justificantes
       "TUTOR": ["/tutor"],
       "COORDINADOR": ["/coordinador"]
     };
 
     let defaultRoleDashboard = "/login";
     if (role === "ESTUDIANTE") defaultRoleDashboard = "/estudiante";
-    if (role === "DOCENTE") defaultRoleDashboard = "/";
+    if (role === "DOCENTE") defaultRoleDashboard = "/justificantes";
     if (role === "TUTOR") defaultRoleDashboard = "/tutor";
     if (role === "COORDINADOR") defaultRoleDashboard = "/coordinador";
 
-    if (isAuthRoute && pathname === "/login") {
+    if (isAuthRoute) {
       const url = req.nextUrl.clone();
       url.pathname = defaultRoleDashboard;
       return NextResponse.redirect(url);
