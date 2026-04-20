@@ -86,7 +86,7 @@ export const authOptions: NextAuthOptions = {
         if (!isAllowed) {
           // Redirigir explícitamente a la raíz (que es /justificantes por el basePath)
           // Esto asegura que se respete el basePath y se mantenga al usuario en el flujo de login.
-          return "/?error=AccessDenied";
+          return "/justificantes/?error=AccessDenied";
         }
         return true;
       }
