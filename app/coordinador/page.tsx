@@ -9,15 +9,15 @@ export default function CoordinadorPage() {
   return (
     <PageContainer 
       title="Panel del Coordinador" 
-      description="Administra usuarios y diseña el flujo de aprobación de justificantes."
+      description="Administra usuarios y consulta el flujo de aprobación de justificantes."
     >
       <Tabs defaultValue="directorio" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
           <TabsTrigger value="directorio" className="flex items-center gap-2">
             <Users className="w-4 h-4" /> Directorio
           </TabsTrigger>
-          <TabsTrigger value="workflows" className="flex items-center gap-2">
-            <Workflow className="w-4 h-4" /> Workflows
+          <TabsTrigger value="flujo" className="flex items-center gap-2">
+            <Workflow className="w-4 h-4" /> Flujo de justificantes
           </TabsTrigger>
         </TabsList>
 
@@ -25,7 +25,7 @@ export default function CoordinadorPage() {
           <DashboardCoordinador />
         </TabsContent>
 
-        <TabsContent value="workflows" className="mt-6">
+        <TabsContent value="flujo" className="mt-6">
           <WorkflowManager />
         </TabsContent>
       </Tabs>
