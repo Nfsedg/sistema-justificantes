@@ -9,6 +9,12 @@ export async function middleware(req: NextRequest) {
   });
 
   const { pathname } = req.nextUrl;
+  const basePath = req.nextUrl.basePath || "";
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.log(`[Middleware] URL: ${pathname} | Token: ${!!token} | Role: ${token?.role || 'NONE'}`);
+  }
 
   // 1. Rutas públicas de API y archivos estáticos (las dejamos pasar siempre)
   const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico", "/logo_upqroo_150.png"];
@@ -29,7 +35,8 @@ export async function middleware(req: NextRequest) {
       // Si intenta ir a una ruta privada sin sesión, mandar al login
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
-      loginUrl.searchParams.set("callbackUrl", pathname);
+      // Asegurar que el callbackUrl incluya el basePath si existe
+      loginUrl.searchParams.set("callbackUrl", basePath + pathname);
       return NextResponse.redirect(loginUrl);
     }
     // Si intenta ir a /login o /, lo dejamos (para que pueda iniciar sesión)
@@ -37,7 +44,22 @@ export async function middleware(req: NextRequest) {
   }
 
   // 4. SI EL USUARIO SÍ ESTÁ LOGUEADO
-  if (token && token.role) {
+  if (token) {
+    // Si llegamos aquí con token pero sin rol, algo anda mal en el JWT (posible delay en DB)
+    // Pero lo dejamos pasar a las APIs. Para páginas, intentaremos redirigir si es posible.
+    if (!token.role) {
+      if (isDev) console.warn(`[Middleware] Usuario autenticado (${token.email}) sin rol detectado.`);
+      
+      // Si está en una ruta de auth, no lo dejes ahí, mándalo a una página que fuerce re-check
+      // o simplemente déjalo pasar si es API.
+      if (pathname.startsWith("/api")) return NextResponse.next();
+      
+      // Si es la página de login o raíz, y ya tiene sesión, deberíamos intentar mandarlo a /justificantes
+      // que es una ruta común, o dejarlo que NextAuth maneje la sesión en el cliente.
+      // Por ahora, si no hay rol, no podemos redirigir a un dashboard específico.
+      return NextResponse.next();
+    }
+
     const role = token.role as string;
     
     // Rutas permitidas para cada rol (además de /api y páginas de error)

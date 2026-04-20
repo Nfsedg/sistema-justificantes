@@ -75,6 +75,18 @@ export function DashboardTutor() {
     return asignacion?.estado === "PENDIENTE";
   });
 
+  const aprobados = justificantes.filter(j => {
+    const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
+    const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
+    return asignacion?.estado === "APROBADO" || asignacion?.estado === "COMPLETADA" || asignacion?.estado === "FINALIZADO";
+  });
+
+  const rechazados = justificantes.filter(j => {
+    const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
+    const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
+    return asignacion?.estado === "RECHAZADO";
+  });
+
   const historial = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
@@ -86,8 +98,10 @@ export function DashboardTutor() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="pendientes" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mb-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 max-w-2xl mb-6">
           <TabsTrigger value="pendientes">Pendientes ({pendientes.length})</TabsTrigger>
+          <TabsTrigger value="aprobados">Aprobados ({aprobados.length})</TabsTrigger>
+          <TabsTrigger value="rechazados">Rechazados ({rechazados.length})</TabsTrigger>
           <TabsTrigger value="historial">Historial ({historial.length})</TabsTrigger>
         </TabsList>
 
@@ -103,12 +117,36 @@ export function DashboardTutor() {
           />
         </TabsContent>
 
+        <TabsContent value="aprobados">
+          <JustificantesList
+            justificantes={aprobados}
+            isAlumnoView={false}
+            title="Justificantes Aprobados"
+            description="Justificantes que has validado y enviado a los docentes."
+            onViewDetails={(j) => setSelectedJustificante(j)}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
+          />
+        </TabsContent>
+
+        <TabsContent value="rechazados">
+          <JustificantesList
+            justificantes={rechazados}
+            isAlumnoView={false}
+            title="Justificantes Rechazados"
+            description="Justificantes que has declinado con observaciones."
+            onViewDetails={(j) => setSelectedJustificante(j)}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
+          />
+        </TabsContent>
+
         <TabsContent value="historial">
           <JustificantesList
             justificantes={historial}
             isAlumnoView={false}
-            title="Justificantes Revisados"
-            description="Historial de justificantes que ya has aprobado o rechazado."
+            title="Mi Historial Completo"
+            description="Historial de todos los justificantes que han pasado por tu revisión."
             onViewDetails={(j) => setSelectedJustificante(j)}
             userEmail={user?.email ?? ""}
             userRole={user?.role ?? ""}

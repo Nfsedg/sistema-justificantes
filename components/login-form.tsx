@@ -28,7 +28,7 @@ export function LoginForm() {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center p-4 overflow-auto"
+      className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden"
       style={{
         background: "linear-gradient(135deg, #1a0a00 0%, #3d1a00 40%, #7c3500 100%)",
       }}

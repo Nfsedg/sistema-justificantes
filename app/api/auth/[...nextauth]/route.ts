@@ -29,6 +29,20 @@ const COORDINATOR_EMAILS = [
   "coordinator@upqroo.edu.mx",
 ];
 
+function determineRole(email: string): "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" | "TUTOR" {
+  const isDev = process.env.NODE_ENV === 'development';
+  
+  if (isDev) {
+    if (process.env.DEV_TUTOR_EMAIL && email === process.env.DEV_TUTOR_EMAIL) return "TUTOR";
+    if (process.env.DEV_COORDINATOR_EMAIL && email === process.env.DEV_COORDINATOR_EMAIL) return "COORDINADOR";
+  }
+
+  if (COORDINATOR_EMAILS.includes(email)) return "COORDINADOR";
+  if (isNumericLocalPart(email)) return "ESTUDIANTE";
+  
+  return "DOCENTE";
+}
+
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
@@ -49,26 +63,10 @@ export const authOptions: NextAuthOptions = {
   events: {
     async createUser({ user }) {
       if (!user.email) return;
-      
-      let newRole: "ESTUDIANTE" | "COORDINADOR" | "DOCENTE" | "TUTOR" = "DOCENTE";
-      
-      const isDev = process.env.NODE_ENV === 'development';
-      const devTutorEmail = process.env.DEV_TUTOR_EMAIL;
-      const devCoordinatorEmail = process.env.DEV_COORDINATOR_EMAIL;
-
-      if (isDev && devTutorEmail && user.email === devTutorEmail) {
-        newRole = "TUTOR";
-      } else if (isDev && devCoordinatorEmail && user.email === devCoordinatorEmail) {
-        newRole = "COORDINADOR";
-      } else if (COORDINATOR_EMAILS.includes(user.email)) {
-        newRole = "COORDINADOR";
-      } else if (isNumericLocalPart(user.email)) {
-        newRole = "ESTUDIANTE";
-      }
-      
+      const newRole = determineRole(user.email);
       await prisma.user.update({
         where: { id: user.id },
-        data: { role: newRole as any }, // Cast to any to handle Prisma enum type if needed
+        data: { role: newRole as any },
       });
     },
   },
@@ -76,7 +74,6 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        // Also expose role to session if needed anywhere else
         (session.user as any).role = token.role; 
       }
       return session;
@@ -84,35 +81,42 @@ export const authOptions: NextAuthOptions = {
     async signIn({ account, profile }: any) {
       if (account.provider === "google") {
         const isDev = process.env.NODE_ENV === 'development';
-        // En desarrollo, permitir cualquier correo electrónico verificado
         if (isDev) {
           return profile.email_verified;
         }
-        // En producción, restringir a correos institucionales
         return profile.email_verified && profile.email.endsWith("@upqroo.edu.mx");
       }
       return false;
     },
     async jwt({ token, user }) {
+      // Al iniciar sesión (user está presente)
       if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        
+        // Intentar obtener el rol de la DB
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
         });
+        
         if (dbUser?.role) {
           token.role = dbUser.role;
-          token.id = dbUser.id;
+        } else {
+          // Fallback si la DB tarda en responder o es un usuario nuevo en proceso de creación
+          token.role = determineRole(user.email!);
         }
       }
       
-      // Sobrescribir el rol en el token si estamos en desarrollo
-      const isDev = process.env.NODE_ENV === 'development';
-      if (isDev && token.email) {
-        if (process.env.DEV_TUTOR_EMAIL && token.email === process.env.DEV_TUTOR_EMAIL) {
-          token.role = "TUTOR";
-        } else if (process.env.DEV_COORDINATOR_EMAIL && token.email === process.env.DEV_COORDINATOR_EMAIL) {
-          token.role = "COORDINADOR";
-        } else if (COORDINATOR_EMAILS.includes(token.email)) {
-          token.role = "COORDINADOR";
+      // Si el token ya existe pero por algún motivo perdió el rol
+      if (!token.role && (token.id || token.sub)) {
+        const userId = (token.id || token.sub) as string;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+        });
+        if (dbUser?.role) {
+          token.role = dbUser.role;
+        } else if (token.email) {
+          token.role = determineRole(token.email as string);
         }
       }
 

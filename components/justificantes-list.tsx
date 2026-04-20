@@ -42,28 +42,56 @@ function EstatusBadge({
   userEmail?: string;
   userRole?: string;
 }) {
-  let estado = "";
+  let label = "Sin estado";
+  let colorClass = "bg-gray-100 text-gray-700 border-gray-200";
+
+  const etapaTutor = justificante.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
+  const etapaProfesores = justificante.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 2);
 
   if (userRole === "ESTUDIANTE") {
-    // Estudiante ve el estado general
-    estado = justificante.status || "";
-  } else if (userRole === "TUTOR") {
-    // Tutor ve su propia asignación en etapa 1
-    const etapaTutor = justificante.workflowInstancia?.etapasInstancia?.find(
-      (e: any) => e.orden === 1
-    );
-    const asignacion = etapaTutor?.asignaciones?.find(
-      (a: any) => a.email === userEmail
-    );
+    const tutorEstado = etapaTutor?.estado;
+    const profeAsignaciones = etapaProfesores?.asignaciones || [];
+    
+    if (tutorEstado === "RECHAZADO") {
+      label = "Rechazado por Tutor";
+      colorClass = "bg-red-100 text-red-700 border-red-200";
+    } else if (tutorEstado === "PENDIENTE" || tutorEstado === "EN_PROCESO") {
+      label = "Pendiente de Tutor";
+      colorClass = "bg-orange-100 text-orange-700 border-orange-200";
+    } else if (tutorEstado === "COMPLETADA") {
+      // Tutor ya aprobó
+      const totalProfes = profeAsignaciones.length;
+      const aprobados = profeAsignaciones.filter((a: any) => a.estado === "APROBADO" || a.estado === "COMPLETADA").length;
+      const rechazados = profeAsignaciones.filter((a: any) => a.estado === "RECHAZADO").length;
+
+      if (rechazados > 0) {
+        label = "Con Observaciones";
+        colorClass = "bg-yellow-100 text-yellow-700 border-yellow-200";
+      } else if (aprobados === totalProfes && totalProfes > 0) {
+        label = "Aceptado por Todos";
+        colorClass = "bg-green-100 text-green-700 border-green-200";
+      } else if (aprobados > 0) {
+        label = `En Revisión (${aprobados}/${totalProfes})`;
+        colorClass = "bg-blue-100 text-blue-700 border-blue-200";
+      } else {
+        label = "Validado por Tutor";
+        colorClass = "bg-cyan-100 text-cyan-700 border-cyan-200";
+      }
+    } else {
+      label = justificante.status || "Pendiente";
+      colorClass = "bg-orange-100 text-orange-700 border-orange-200";
+    }
+    
+    return <Badge className={`text-xs ${colorClass} hover:${colorClass}`}>{label}</Badge>;
+  }
+
+  // Lógica para Tutor y Docente (Personal Académico)
+  let estado = "";
+  if (userRole === "TUTOR") {
+    const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === userEmail);
     estado = asignacion?.estado || justificante.status || "";
   } else if (userRole === "DOCENTE") {
-    // Docente ve su propia asignación en etapa 2
-    const etapaDocente = justificante.workflowInstancia?.etapasInstancia?.find(
-      (e: any) => e.orden === 2
-    );
-    const asignacion = etapaDocente?.asignaciones?.find(
-      (a: any) => a.email === userEmail
-    );
+    const asignacion = etapaProfesores?.asignaciones?.find((a: any) => a.email === userEmail);
     estado = asignacion?.estado || justificante.status || "";
   } else {
     estado = justificante.status || "";
@@ -75,7 +103,7 @@ function EstatusBadge({
     case "COMPLETADA":
       return <Badge className="text-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Aprobado</Badge>;
     case "RECHAZADO":
-      return <Badge className="text-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Declinado</Badge>;
+      return <Badge className="text-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Rechazado</Badge>;
     case "DEVUELTO":
       return <Badge className="text-xs bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Devuelto</Badge>;
     case "EN_PROCESO":

@@ -16,7 +16,9 @@ type useJustificantesReturn = {
   isErrorJustificantes: boolean;
   isUploadingJustificante: boolean;
   isSuccess: boolean;
+  resetSuccess: () => void;
   uploadJustificante: (formData: FormDataInterface) => Promise<string>;
+  updateJustificante: (id: number, formData: FormDataInterface) => Promise<string>;
   getJustificantes: () => Promise<void>;
   isLoadingJustificantes: boolean;
   justificantes: Justificante[];
@@ -30,7 +32,7 @@ type useJustificantesReturn = {
 // Expose a function to get all justificantes according of the user role
 // ESTUDIANTE: only their justificantes
 // ADMIN & COORDINADOR: all justificantes
-// DOCENTE: only just ificantes assigned to them
+// DOCENTE: only justificantes assigned to them
 // The role validaton is determined in the API route using the JWT token
 
 export default function useJustificantes(): useJustificantesReturn {
@@ -139,15 +141,61 @@ export default function useJustificantes(): useJustificantesReturn {
     }
   };
 
+  const updateJustificante = async (id: number, formData: FormDataInterface) => {
+    setIsUploadingJustificante(true);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("fechaInicio", formData.fechaInicio);
+      formDataToSend.append("fechaFin", formData.fechaFin);
+      formDataToSend.append("motivo", formData.motivo);
+      formDataToSend.append("descripcion", formData.descripcion);
+      formDataToSend.append("tutorEmail", formData.tutorEmail);
+      formDataToSend.append("profesoresEmails", JSON.stringify(formData.profesoresEmails));
+      
+      if (formData.file) {
+        const fileType = formData.file.type;
+        if (fileType !== "application/pdf" && !fileType.startsWith("image/")) {
+          throw new Error("Solo se aceptan archivos PDF o imágenes.");
+        }
+        formDataToSend.append("file", formData.file);
+      }
+
+      const response = await fetch(`/justificantes/api/justificantes/${id}`, {
+        method: "PUT",
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to update justificante");
+      }
+
+      const data = await response.json();
+      setIsSuccess(true);
+      toast.success("Justificante actualizado exitosamente");
+      return data.justificante?.fileUrl;
+    } catch (error) {
+      toast.error("Error al actualizar el justificante: " + (error as Error).message);
+      setIsErrorJustificantes(true);
+      throw error;
+    } finally {
+      setIsUploadingJustificante(false);
+    }
+  };
+
+  const resetSuccess = () => setIsSuccess(false);
+
   return {
     isLoadingJustificantes,
     isErrorJustificantes,
     isUploadingJustificante,
     uploadJustificante,
+    updateJustificante,
     getJustificantes,
     getDocentes,
     updateJustificanteWorkflow,
     isSuccess,
+    resetSuccess,
     justificantes,
     docentes,
     isLoadingDocentes

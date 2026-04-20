@@ -53,11 +53,6 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
     }
   }, [justificante, isOpen])
 
-  const handleToggleDocente = (email: string) => {
-    setSelectedDocentes(prev =>
-      prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]
-    )
-  }
 
   const handleAction = async (action: "APROBAR" | "RECHAZAR") => {
     if (!justificante) return
@@ -148,37 +143,32 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
 
             {!isCompleted ? (
               <div className="space-y-4 pt-4 border-t mt-4">
-                <h4 className="font-medium">1. Selección de Profesores (Docentes)</h4>
+                <h4 className="font-medium">1. Profesores Asignados</h4>
                 <p className="text-sm text-muted-foreground">
-                  Selecciona a los profesores que deben ser notificados. Los profesores sugeridos por el alumno están pre-seleccionados.
+                  Los siguientes profesores han sido <strong>asignados directamente por el estudiante</strong> y recibirán la notificación de este justificante una vez sea aprobado.
                 </p>
 
-                <ScrollArea className="h-[200px] border rounded-md p-4">
-                  <div className="flex flex-col gap-3">
-                    {docentes.map(docente => (
-                      <div key={docente.email} className="flex items-start space-x-3">
-                        <Checkbox
-                          id={docente.email}
-                          checked={selectedDocentes.includes(docente.email)}
-                          onCheckedChange={() => handleToggleDocente(docente.email)}
-                        />
-                        <label
-                          htmlFor={docente.email}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {docente.name}
-                          <span className="block text-xs text-muted-foreground mt-0.5">{docente.email}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+                <div className="flex flex-wrap gap-2 py-2">
+                  {selectedDocentes.length > 0 ? (
+                    selectedDocentes.map(email => {
+                      const docente = docentes.find(d => d.email === email);
+                      return (
+                        <Badge key={email} variant="secondary" className="px-3 py-1 text-sm font-normal">
+                          {docente ? docente.name : email}
+                          {docente && <span className="ml-2 text-xs opacity-70">{docente.email}</span>}
+                        </Badge>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-destructive">No hay profesores asignados.</p>
+                  )}
+                </div>
 
                 <div className="pt-2">
                   <h4 className="font-medium mb-2">2. Resolución</h4>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <Label htmlFor="obs">Observaciones (Opcional si se aprueba)</Label>
+                      <Label htmlFor="obs">Observaciones (Opcional)</Label>
                       <Textarea
                         id="obs"
                         placeholder="Agrega comentarios o razones de rechazo..."
@@ -226,9 +216,9 @@ export function RevisionModal({ isOpen, onClose, justificante, docentes, onUpdat
                 A continuación se muestra el formato oficial que recibirán los docentes asignados.
               </p>
             </div>
-            <JustificanteOficio 
-              justificante={justificante} 
-              tutorName={useAuth().user?.name || undefined} 
+            <JustificanteOficio
+              justificante={justificante}
+              tutorName={useAuth().user?.name || undefined}
             />
           </TabsContent>
         </Tabs>

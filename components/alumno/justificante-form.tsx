@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, CheckCircle2, Loader2, X, Check, ChevronsUpDown } from "lucide-react";
+import { Upload, FileText, CheckCircle2, Loader2, X, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,16 +44,21 @@ import { DateRangePicker } from "../datepicker";
 import { toast } from "sonner";
 
 const motivos = [
-  "Academico",
+  "Académico",
   "Familiar",
   "Laboral",
-  "Medico",
+  "Médico",
   "Otros",
 ];
 
-export function JustificanteForm() {
+interface JustificanteFormProps {
+  onSuccess?: () => void;
+  initialData?: Justificante;
+}
+
+export function JustificanteForm({ onSuccess, initialData }: JustificanteFormProps) {
   const { user } = useAuth();
-  const { uploadJustificante, isLoadingJustificantes, isSuccess } = useJustificantes();
+  const { uploadJustificante, updateJustificante, isLoadingJustificantes, isSuccess, resetSuccess } = useJustificantes();
   const { personal, getPersonal, isLoadingPersonal } = usePersonalAcademico();
   const [openTutor, setOpenTutor] = useState(false);
   const [openProfesor, setOpenProfesor] = useState(false);
@@ -62,22 +67,46 @@ export function JustificanteForm() {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  const getInitialFormData = () => {
+    if (initialData) {
+      // Extract tutor and professors from workflow
+      const etapaTutor = initialData.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
+      const etapaProfesores = initialData.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 2);
+      
+      const tutorEmail = etapaTutor?.asignaciones?.[0]?.email || "";
+      const profesoresEmails = etapaProfesores?.asignaciones?.map((a: any) => a.email) || [];
+
+      return {
+        fechaInicio: initialData.fechaInicio,
+        fechaFin: initialData.fechaFin,
+        motivo: initialData.motivo || "",
+        descripcion: initialData.descripcion || "",
+        tutorEmail,
+        profesoresEmails,
+        file: null as File | null,
+      };
+    }
+
+    return {
+      fechaInicio: new Date().toISOString(),
+      fechaFin: new Date().toISOString(),
+      motivo: "",
+      descripcion: "",
+      tutorEmail: "",
+      profesoresEmails: [] as string[],
+      file: null as File | null,
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData());
+
   useEffect(() => {
     getPersonal();
   }, [getPersonal]);
 
   const tutores = personal.filter(p => p.role === "TUTOR");
-  const docentes = personal.filter(p => p.role === "DOCENTE" || p.role === "TUTOR");
+  const docentes = personal.filter(p => (p.role === "DOCENTE" || p.role === "TUTOR") && p.email !== formData.tutorEmail);
 
-  const [formData, setFormData] = useState({
-    fechaInicio: new Date().toISOString(),
-    fechaFin: new Date().toISOString(),
-    motivo: "",
-    descripcion: "",
-    tutorEmail: "",
-    profesoresEmails: [] as string[],
-    file: null as File | null,
-  });
   const removeProfesorEmail = (emailToRemove: string) => {
     setFormData(prev => ({
       ...prev,
@@ -87,11 +116,42 @@ export function JustificanteForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.file || !formData.fechaInicio || !formData.fechaFin || !formData.tutorEmail) {
-      toast.error("Por favor, completa todos los campos obligatorios.");
+    
+    // File is mandatory ONLY when creating NEW justification
+    const isFileMissing = !initialData && !formData.file;
+
+    if (
+      !user || 
+      isFileMissing ||
+      !formData.fechaInicio || 
+      !formData.fechaFin || 
+      !formData.tutorEmail || 
+      !formData.motivo || 
+      !formData.descripcion || 
+      formData.profesoresEmails.length === 0
+    ) {
+      toast.error("Por favor, completa todos los campos del formulario.");
       return;
     };
-    await uploadJustificante(formData);
+
+    try {
+      if (initialData) {
+        await updateJustificante(initialData.id, formData);
+      } else {
+        await uploadJustificante(formData);
+      }
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    resetSuccess();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,9 +172,13 @@ export function JustificanteForm() {
             <h3 className="text-lg font-semibold text-foreground mb-2">
               Justificante enviado
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               Tu justificante ha sido registrado exitosamente.
             </p>
+            <Button onClick={handleReset} variant="outline" className="gap-2">
+              <PlusCircle className="w-4 h-4" />
+              Crear otro justificante
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -126,10 +190,12 @@ export function JustificanteForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-primary" />
-          Nuevo Justificante
+          {initialData ? "Editar Justificante" : "Nuevo Justificante"}
         </CardTitle>
         <CardDescription>
-          Registra tu ausencia y adjunta el documento de respaldo
+          {initialData 
+            ? "Actualiza los detalles de tu justificante o reemplaza el documento adjunto." 
+            : "Registra tu ausencia y adjunta el documento de respaldo"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -168,7 +234,13 @@ export function JustificanteForm() {
                               key={tutor.id}
                               value={`${tutor.name} ${tutor.email}`}
                               onSelect={() => {
-                                setFormData((prev) => ({ ...prev, tutorEmail: tutor.email || "" }));
+                                const email = tutor.email || "";
+                                // Remove email from professors if it's selected as tutor
+                                setFormData((prev) => ({ 
+                                  ...prev, 
+                                  tutorEmail: email,
+                                  profesoresEmails: prev.profesoresEmails.filter(e => e !== email)
+                                }));
                                 setOpenTutor(false);
                               }}
                             >
@@ -185,7 +257,12 @@ export function JustificanteForm() {
                             <CommandItem
                               value={tutorInputValue}
                               onSelect={() => {
-                                setFormData((prev) => ({ ...prev, tutorEmail: tutorInputValue }));
+                                // Remove email from professors if it's selected as tutor
+                                setFormData((prev) => ({ 
+                                  ...prev, 
+                                  tutorEmail: tutorInputValue,
+                                  profesoresEmails: prev.profesoresEmails.filter(e => e !== tutorInputValue)
+                                }));
                                 setOpenTutor(false);
                                 setTutorInputValue("");
                               }}
@@ -207,7 +284,7 @@ export function JustificanteForm() {
               </div>
 
               <div className="space-y-2 flex flex-col">
-                <Label htmlFor="profesorEmail">Correos de Profesores (Opcional)</Label>
+                <Label htmlFor="profesorEmail">Correos de Profesores*</Label>
                 <div className="flex gap-2">
                   <Popover open={openProfesor} onOpenChange={setOpenProfesor}>
                     <PopoverTrigger asChild>
@@ -260,6 +337,10 @@ export function JustificanteForm() {
                               <CommandItem
                                 value={profesorInputValue}
                                 onSelect={() => {
+                                  if (profesorInputValue === formData.tutorEmail) {
+                                    toast.error("Este correo ya está asignado como Tutor.");
+                                    return;
+                                  }
                                   if (!formData.profesoresEmails.includes(profesorInputValue)) {
                                     setFormData(prev => ({
                                       ...prev,
@@ -322,7 +403,7 @@ export function JustificanteForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="motivo">Motivo (opcional)</Label>
+            <Label htmlFor="motivo">Motivo*</Label>
             <Select
               value={formData.motivo}
               onValueChange={(value) =>
@@ -343,7 +424,7 @@ export function JustificanteForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción (opcional)</Label>
+            <Label htmlFor="descripcion">Descripción*</Label>
             <Textarea
               id="descripcion"
               placeholder="Proporciona detalles adicionales sobre tu ausencia..."
@@ -359,7 +440,9 @@ export function JustificanteForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="archivo">Documento de respaldo*</Label>
+            <Label htmlFor="archivo">
+              {initialData ? "Reemplazar documento (opcional)" : "Documento de respaldo*"}
+            </Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               <input
                 id="archivo"
@@ -404,10 +487,10 @@ export function JustificanteForm() {
             {isLoadingJustificantes ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enviando...
+                {initialData ? "Actualizando..." : "Enviando..."}
               </>
             ) : (
-              "Enviar Justificante"
+              initialData ? "Guardar Cambios" : "Enviar Justificante"
             )}
           </Button>
         </form>
