@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { formatDate } from "date-fns";
 import { FileText, Calendar, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { JustificanteForm } from "./justificante-form";
+import { cn } from "@/lib/utils";
 
 interface JustificanteDetalleProps {
   justificante: Justificante;
@@ -124,59 +125,70 @@ export function JustificanteDetalle({
                 <p className="text-sm text-muted-foreground">No hay información de seguimiento disponible.</p>
               ) : (
                 <div className="relative border-l-2 border-muted ml-3 space-y-6 pb-2">
-                  {etapasOrdenadas.map((etapa: any) => (
-                    <div key={etapa.id} className="relative pl-6">
-                      <div className="absolute -left-[11px] top-1 bg-background rounded-full">
-                        {getStatusIcon(etapa.estado)}
-                      </div>
+                  {etapasOrdenadas.map((etapa: any) => {
+                    const isEtapa2 = etapa.orden === 2;
+                    const etapa1NoCompletada = etapasOrdenadas.find((e: any) => e.orden === 1)?.estado !== "COMPLETADA";
+                    const isBloqueada = isEtapa2 && etapa1NoCompletada;
 
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold">
-                            {etapa.workflowEtapa?.nombre || `Etapa ${etapa.orden} ${etapa.orden === 1 ? "(Tutor)" : "(Profesores)"}`}
-                          </h4>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${etapa.estado === "COMPLETADA" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50" :
-                              etapa.estado === "EN_PROCESO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/50" :
-                                "bg-muted text-muted-foreground"
-                            }`}>
-                            {traducirStatus(etapa.estado)}
-                          </span>
+                    return (
+                      <div key={etapa.id} className={cn(
+                        "relative pl-6 transition-all duration-300",
+                        isBloqueada && "opacity-40 grayscale pointer-events-none select-none"
+                      )}>
+                        <div className="absolute -left-[11px] top-1 bg-background rounded-full">
+                          {isBloqueada ? <Clock className="w-5 h-5 text-muted-foreground" /> : getStatusIcon(etapa.estado)}
                         </div>
 
-                        {/* Asignaciones de esta etapa */}
-                        {etapa.asignaciones && etapa.asignaciones.length > 0 ? (
-                          <div className="space-y-3 mt-3">
-                            {etapa.asignaciones.map((asignacion: any) => (
-                              <div key={asignacion.id} className="p-3 bg-muted/30 rounded-lg border text-sm space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium text-muted-foreground">{asignacion.email}</span>
-                                  <span className="flex items-center gap-1">
-                                    {getStatusIcon(asignacion.estado)}
-                                    <span>{traducirStatus(asignacion.estado)}</span>
-                                  </span>
-                                </div>
-
-                                {asignacion.comentario && (
-                                  <div className="mt-2 text-muted-foreground bg-background p-2 rounded border">
-                                    <p className="text-xs font-semibold mb-1">Notas:</p>
-                                    <p>{asignacion.comentario}</p>
-                                  </div>
-                                )}
-
-                                {asignacion.revisadoEn && (
-                                  <p className="text-xs text-muted-foreground text-right">
-                                    Revisado el {formatDate(new Date(asignacion.revisadoEn), "dd/MM/yyyy HH:mm")}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold">
+                                {etapa.workflowEtapa?.nombre || `Etapa ${etapa.orden} ${etapa.orden === 1 ? "(Tutor)" : "(Profesores)"}`}
+                              </h4>
+                            </div>
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${etapa.estado === "COMPLETADA" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50" :
+                                etapa.estado === "EN_PROCESO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/50" :
+                                  "bg-muted text-muted-foreground"
+                              }`}>
+                              {isBloqueada ? "Pendiente" : traducirStatus(etapa.estado)}
+                            </span>
                           </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Sin asignaciones</p>
-                        )}
+
+                          {/* Asignaciones de esta etapa */}
+                          {etapa.asignaciones && etapa.asignaciones.length > 0 ? (
+                            <div className="space-y-3 mt-3">
+                              {etapa.asignaciones.map((asignacion: any) => (
+                                <div key={asignacion.id} className="p-3 bg-muted/30 rounded-lg border text-sm space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-muted-foreground">{asignacion.email}</span>
+                                    <span className="flex items-center gap-1">
+                                      {getStatusIcon(isBloqueada ? "PENDIENTE" : asignacion.estado)}
+                                      <span>{isBloqueada ? "Pendiente" : traducirStatus(asignacion.estado)}</span>
+                                    </span>
+                                  </div>
+
+                                  {asignacion.comentario && !isBloqueada && (
+                                    <div className="mt-2 text-muted-foreground bg-background p-2 rounded border">
+                                      <p className="text-xs font-semibold mb-1">Notas:</p>
+                                      <p>{asignacion.comentario}</p>
+                                    </div>
+                                  )}
+
+                                  {asignacion.revisadoEn && !isBloqueada && (
+                                    <p className="text-xs text-muted-foreground text-right">
+                                      Revisado el {formatDate(new Date(asignacion.revisadoEn), "dd/MM/yyyy HH:mm")}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Sin asignaciones</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
