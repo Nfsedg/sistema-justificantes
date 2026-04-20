@@ -72,25 +72,25 @@ export function DashboardTutor() {
   const pendientes = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
-    return asignacion?.estado === "PENDIENTE";
+    return asignacion && asignacion.estado === "PENDIENTE";
   });
 
   const aprobados = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
-    return asignacion?.estado === "APROBADO" || asignacion?.estado === "COMPLETADA" || asignacion?.estado === "FINALIZADO";
+    return asignacion && (asignacion.estado === "APROBADO" || asignacion.estado === "COMPLETADA" || asignacion.estado === "FINALIZADO");
   });
 
   const rechazados = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
-    return asignacion?.estado === "RECHAZADO";
+    return asignacion && asignacion.estado === "RECHAZADO";
   });
 
   const historial = justificantes.filter(j => {
     const etapaTutor = j.workflowInstancia?.etapasInstancia?.find((e: any) => e.orden === 1);
     const asignacion = etapaTutor?.asignaciones?.find((a: any) => a.email === user?.email);
-    return asignacion?.estado !== "PENDIENTE";
+    return asignacion && asignacion.estado !== "PENDIENTE";
   });
 
   if (loading) return <div className="text-center py-10">Cargando panel del tutor...</div>;

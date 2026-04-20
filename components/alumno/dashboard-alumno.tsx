@@ -21,6 +21,7 @@ export function DashboardAlumno() {
 
   const pendientes = justificantes.filter((j) => j.status === "EN_PROCESO");
   const rechazados = justificantes.filter((j) => j.status === "RECHAZADO");
+  const aprobados = justificantes.filter((j) => j.status === "FINALIZADO");
 
   const handleViewDetails = (j: Justificante) => {
     setSelectedJustificante(j);
@@ -30,9 +31,10 @@ export function DashboardAlumno() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="en-proceso" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 max-w-4xl">
           <TabsTrigger value="nuevo">Nuevo Justificante</TabsTrigger>
           <TabsTrigger value="en-proceso">En Proceso ({pendientes.length})</TabsTrigger>
+          <TabsTrigger value="aprobados">Aprobados ({aprobados.length})</TabsTrigger>
           <TabsTrigger value="rechazados">Rechazados ({rechazados.length})</TabsTrigger>
           <TabsTrigger value="historial">Mi Historial</TabsTrigger>
         </TabsList>
@@ -49,6 +51,18 @@ export function DashboardAlumno() {
             isAlumnoView={true}
             title="Justificantes en Proceso"
             description="Seguimiento de tus justificantes que están siendo evaluados."
+            onViewDetails={handleViewDetails}
+            userEmail={user?.email ?? ""}
+            userRole="ESTUDIANTE"
+          />
+        </TabsContent>
+
+        <TabsContent value="aprobados" className="mt-6">
+          <JustificantesList
+            justificantes={aprobados}
+            isAlumnoView={true}
+            title="Justificantes Aprobados"
+            description="Justificantes que han completado todas las etapas de validación."
             onViewDetails={handleViewDetails}
             userEmail={user?.email ?? ""}
             userRole="ESTUDIANTE"
