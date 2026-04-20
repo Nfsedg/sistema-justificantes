@@ -8,6 +8,9 @@ const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const sessionCookieName = `${cookiePrefix}next-auth.session-token`;
 
 export async function middleware(req: NextRequest) {
+  // Debug de cookies crudas para ver si llegan al servidor
+  const allCookies = req.cookies.getAll().map(c => `${c.name}=${c.value.substring(0, 10)}...`);
+  
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -18,96 +21,73 @@ export async function middleware(req: NextRequest) {
   const isDev = process.env.NODE_ENV === 'development';
 
   if (isDev) {
-    console.log(`[Middleware] URL: ${pathname} | Token: ${!!token} | Role: ${token?.role || 'NONE'}`);
+    console.log(`------------------------------------------------`);
+    console.log(`[Middleware] Pathname: ${pathname}`);
+    console.log(`[Middleware] Token encontrado: ${!!token}`);
+    if (token) console.log(`[Middleware] Rol: ${token.role}`);
+    console.log(`[Middleware] Cookies presentes: ${allCookies.join(", ")}`);
   }
 
-  // 1. Rutas públicas de API y archivos estáticos (las dejamos pasar siempre)
+  // 1. Rutas públicas
   const publicApiPaths = ["/api/auth", "/_next", "/favicon.ico", "/logo_upqroo_150.png"];
-  
-  // También permitir cualquier archivo con extensión común de imagen/estático
   const isStaticFile = pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/i);
   
   if (publicApiPaths.some((path) => pathname.startsWith(path)) || isStaticFile) {
     return NextResponse.next();
   }
 
-  // 2. ¿Es la ruta de login o la ruta raíz?
   const isAuthRoute = pathname === "/login" || pathname === "/";
 
   // 3. SI EL USUARIO NO ESTÁ LOGUEADO
   if (!token) {
     if (!isAuthRoute) {
-      // Si intenta ir a una ruta privada sin sesión, mandar al login
+      console.log(`[Middleware] Redirigiendo a login: usuario no autenticado en ${pathname}`);
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
-      // Asegurar que el callbackUrl incluya el basePath
       loginUrl.searchParams.set("callbackUrl", BASE_PATH + pathname);
       return NextResponse.redirect(loginUrl);
     }
-    // Si intenta ir a /login o /, lo dejamos (para que pueda iniciar sesión)
     return NextResponse.next();
   }
 
   // 4. SI EL USUARIO SÍ ESTÁ LOGUEADO
   if (token) {
-    // Si llegamos aquí con token pero sin rol, algo anda mal en el JWT (posible delay en DB)
-    // Pero lo dejamos pasar a las APIs. Para páginas, intentaremos redirigir si es posible.
-    if (!token.role) {
-      if (isDev) console.warn(`[Middleware] Usuario autenticado (${token.email}) sin rol detectado.`);
-      
-      // Si está en una ruta de auth, no lo dejes ahí, mándalo a una página que fuerce re-check
-      // o simplemente déjalo pasar si es API.
-      if (pathname.startsWith("/api")) return NextResponse.next();
-      
-      // Si es la página de login o raíz, y ya tiene sesión, deberíamos intentar mandarlo a /justificantes
-      // que es una ruta común, o dejarlo que NextAuth maneje la sesión en el cliente.
-      // Por ahora, si no hay rol, no podemos redirigir a un dashboard específico.
-      return NextResponse.next();
-    }
-
-    const role = token.role as string;
+    const role = (token.role as string) || "GUEST";
     
-    // Rutas permitidas para cada rol (además de /api y páginas de error)
+    // IMPORTANTE: Aquí las rutas NO deben llevar "/justificantes" 
+    // porque el middleware ya recibe la ruta relativa al basePath.
     const rolePaths: Record<string, string[]> = {
       "ESTUDIANTE": ["/estudiante"],
-      "DOCENTE": ["/justificantes"], // Se usa /justificantes ya que no hay carpeta /docentes en app
-      "TUTOR": ["/tutor", "/justificantes"],
-      "COORDINADOR": ["/coordinador", "/justificantes"]
+      "DOCENTE": ["/"], // El dashboard del docente es la raíz del basePath
+      "TUTOR": ["/tutor"],
+      "COORDINADOR": ["/coordinador"]
     };
 
-    // Determinar la página de inicio (dashboard) de cada rol
     let defaultRoleDashboard = "/login";
     if (role === "ESTUDIANTE") defaultRoleDashboard = "/estudiante";
-    if (role === "DOCENTE") defaultRoleDashboard = "/justificantes";
+    if (role === "DOCENTE") defaultRoleDashboard = "/";
     if (role === "TUTOR") defaultRoleDashboard = "/tutor";
     if (role === "COORDINADOR") defaultRoleDashboard = "/coordinador";
 
-    // Si un usuario logueado intenta ir al /login o la ruta raíz /, redirigirlo directamente a su dashboard
-    if (isAuthRoute) {
+    if (isAuthRoute && pathname === "/login") {
       const url = req.nextUrl.clone();
       url.pathname = defaultRoleDashboard;
       return NextResponse.redirect(url);
     }
 
-    // Permitir todas las peticiones a la API si ya está logueado
-    if (pathname.startsWith("/api")) {
-      return NextResponse.next();
-    }
+    if (pathname.startsWith("/api")) return NextResponse.next();
 
-    // Verificar si el rol tiene permiso para acceder a la ruta actual
     const allowedPrefixes = rolePaths[role] || [];
-    // Todas las sesiones con token pueden acceder a /docs
-    const isAllowed = allowedPrefixes.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith("/docs");
+    const isAllowed = pathname === "/" || allowedPrefixes.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith("/docs");
     
-    // Si la ruta no le pertenece, se le bloquea y se le envía a su respectivo dashboard
     if (!isAllowed) {
+      console.log(`[Middleware] Acceso denegado: Rol ${role} no puede entrar a ${pathname}. Redirigiendo a ${defaultRoleDashboard}`);
       const url = req.nextUrl.clone();
       url.pathname = defaultRoleDashboard;
       return NextResponse.redirect(url);
     }
   }
 
-  // Si está logueado pero por algún motivo no tiene rol, déjalo pasar (NextAuth maneja su caso en páginas)
   return NextResponse.next();
 }
 
