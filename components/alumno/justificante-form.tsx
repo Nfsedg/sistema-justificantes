@@ -44,13 +44,11 @@ import { DateRangePicker } from "../datepicker";
 import { toast } from "sonner";
 
 const motivos = [
-  "Cita médica",
-  "Enfermedad",
-  "Emergencia familiar",
-  "Trámite oficial",
-  "Representación deportiva",
-  "Representación académica",
-  "Otro",
+  "Academico",
+  "Familiar",
+  "Laboral",
+  "Medico",
+  "Otros",
 ];
 
 export function JustificanteForm() {

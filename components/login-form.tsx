@@ -28,7 +28,7 @@ export function LoginForm() {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden"
+      className="fixed inset-0 flex items-center justify-center p-4 overflow-auto"
       style={{
         background: "linear-gradient(135deg, #1a0a00 0%, #3d1a00 40%, #7c3500 100%)",
       }}
@@ -64,11 +64,11 @@ export function LoginForm() {
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="flex items-center justify-center">
-              <Image 
-                src="/justificantes/logo_upqroo_150.png" 
-                alt="Logo UPQROO" 
-                width={80} 
-                height={80} 
+              <Image
+                src="/justificantes/logo_upqroo_150.png"
+                alt="Logo UPQROO"
+                width={80}
+                height={80}
                 className="object-contain"
                 priority
               />

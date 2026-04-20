@@ -10,7 +10,8 @@ import { JustificanteDetalle } from "./justificante-detalle";
 import { Justificante } from "@/lib/types";
 
 export function DashboardAlumno() {
-  const { justificantes, getJustificantes } = useJustificantes()
+  const { user } = useAuth();
+  const { justificantes, getJustificantes } = useJustificantes();
   const [selectedJustificante, setSelectedJustificante] = useState<Justificante | null>(null);
   const [isDetalleOpen, setIsDetalleOpen] = useState(false);
 
@@ -27,7 +28,6 @@ export function DashboardAlumno() {
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
       <Tabs defaultValue="en-proceso" className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="nuevo">Nuevo Justificante</TabsTrigger>
@@ -48,6 +48,8 @@ export function DashboardAlumno() {
             title="Justificantes en Proceso"
             description="Seguimiento de tus justificantes que están siendo evaluados."
             onViewDetails={handleViewDetails}
+            userEmail={user?.email ?? ""}
+            userRole="ESTUDIANTE"
           />
         </TabsContent>
 
@@ -58,11 +60,12 @@ export function DashboardAlumno() {
             title="Mis Justificantes"
             description="Historial completo de tus justificantes enviados."
             onViewDetails={handleViewDetails}
+            userEmail={user?.email ?? ""}
+            userRole="ESTUDIANTE"
           />
         </TabsContent>
       </Tabs>
 
-      {/* Modal Detalles y Seguimiento */}
       {selectedJustificante && (
         <JustificanteDetalle
           justificante={selectedJustificante}

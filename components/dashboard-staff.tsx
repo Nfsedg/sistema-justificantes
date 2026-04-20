@@ -11,9 +11,8 @@ import {
   Clock,
   CheckCircle2,
   Users,
-  GraduationCap,
 } from "lucide-react";
-import { JustificanteEvaluar } from "./justificante-evaluar"; // Lo crearemos más adelante
+import { JustificanteEvaluar } from "./justificante-evaluar";
 
 export function DashboardStaff() {
   const { user } = useAuth();
@@ -22,7 +21,6 @@ export function DashboardStaff() {
   const [selectedJustificante, setSelectedJustificante] = useState<Justificante | null>(null);
   const [isEvaluarOpen, setIsEvaluarOpen] = useState(false);
 
-  // Consideramos coordinador o admin basado en el rol real de sesión
   const isCoordinador = user?.role === "COORDINADOR";
 
   const fetchJustificantes = async () => {
@@ -48,7 +46,7 @@ export function DashboardStaff() {
 
   const handleEvaluarSuccess = () => {
     setIsEvaluarOpen(false);
-    fetchJustificantes(); // Recargar tras evaluar
+    fetchJustificantes();
   };
 
   const stats = {
@@ -60,11 +58,7 @@ export function DashboardStaff() {
 
   const pendientes = justificantes.filter((j) => j.status === "EN_PROCESO");
   const recientes = [...justificantes]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
-    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
 
   if (loading) {
@@ -77,9 +71,7 @@ export function DashboardStaff() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Asignados
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Asignados</CardTitle>
             <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -90,9 +82,7 @@ export function DashboardStaff() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pendientes
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pendientes</CardTitle>
             <Clock className="h-4 w-4 text-chart-3" />
           </CardHeader>
           <CardContent>
@@ -103,9 +93,7 @@ export function DashboardStaff() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Aprobados
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Aprobados</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-secondary" />
           </CardHeader>
           <CardContent>
@@ -116,9 +104,7 @@ export function DashboardStaff() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Alumnos
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Alumnos</CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -132,9 +118,7 @@ export function DashboardStaff() {
       <Tabs defaultValue="todos" className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="todos">Todos</TabsTrigger>
-          <TabsTrigger value="pendientes">
-            Pendientes ({stats.pendientes})
-          </TabsTrigger>
+          <TabsTrigger value="pendientes">Pendientes ({stats.pendientes})</TabsTrigger>
           <TabsTrigger value="recientes">Recientes</TabsTrigger>
         </TabsList>
 
@@ -143,15 +127,10 @@ export function DashboardStaff() {
             justificantes={justificantes}
             isAlumnoView={false}
             title="Todos los Justificantes"
-            description={
-              isCoordinador
-                ? `Justificantes de alumnos de tu coordinación`
-                : "Todos los justificantes en los que participas"
-            }
-            onViewDetails={(j) => {
-              setSelectedJustificante(j);
-              setIsEvaluarOpen(true);
-            }}
+            description={isCoordinador ? "Justificantes de alumnos de tu coordinación" : "Todos los justificantes en los que participas"}
+            onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
           />
         </TabsContent>
 
@@ -161,10 +140,9 @@ export function DashboardStaff() {
             isAlumnoView={false}
             title="Justificantes Pendientes"
             description="Justificantes que están en proceso de evaluación"
-            onViewDetails={(j) => {
-              setSelectedJustificante(j);
-              setIsEvaluarOpen(true);
-            }}
+            onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
           />
         </TabsContent>
 
@@ -174,15 +152,13 @@ export function DashboardStaff() {
             isAlumnoView={false}
             title="Justificantes Recientes"
             description="Últimos 10 justificantes asignados"
-            onViewDetails={(j) => {
-              setSelectedJustificante(j);
-              setIsEvaluarOpen(true);
-            }}
+            onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            userEmail={user?.email ?? ""}
+            userRole={user?.role ?? ""}
           />
         </TabsContent>
       </Tabs>
 
-      {/* Drawer/Modal para evaluar */}
       {selectedJustificante && isEvaluarOpen && (
         <JustificanteEvaluar
           justificante={selectedJustificante}
