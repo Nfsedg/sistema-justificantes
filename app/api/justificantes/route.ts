@@ -7,7 +7,6 @@ import { JustificanteStatus } from "@/generated/prisma/client"
 
 export async function POST(req: NextRequest) {
   try {
-    // 🔐 Autenticación
     const token = await getToken({
       req,
       secret: process.env.NEXTAUTH_SECRET!
@@ -21,7 +20,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    // 📦 Obtener formData
     const data = await req.formData()
 
     const file = data.get("file") as File | null
@@ -44,7 +42,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only PDF or image files allowed" }, { status: 400 })
     }
 
-    // 📂 Guardar archivo
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
@@ -59,9 +56,7 @@ export async function POST(req: NextRequest) {
 
     const fileUrl = `/uploads/justificantes/${fileName}`
 
-    // 🔁 Transacción completa
     const result = await prisma.$transaction(async (tx) => {
-      // 1️⃣ Crear justificante
       const justificante = await tx.justificantes.create({
         data: {
           estudianteId: token.sub!,
@@ -74,7 +69,6 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      // 2️⃣ Obtener workflow fijo
       const workflow = await tx.workflow.findFirst({
         include: { etapas: true }
       })
@@ -83,7 +77,6 @@ export async function POST(req: NextRequest) {
         throw new Error("Workflow no configurado")
       }
 
-      // 3️⃣ Crear instancia workflow
       const instancia = await tx.workflowInstancia.create({
         data: {
           justificanteId: justificante.id,
@@ -91,7 +84,6 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      // 4️⃣ Crear etapas instanciadas
       for (const etapa of workflow.etapas) {
         const etapaInstancia = await tx.workflowEtapaInstancia.create({
           data: {
@@ -102,7 +94,6 @@ export async function POST(req: NextRequest) {
           }
         })
 
-        // Tutor (etapa 1)
         if (etapa.orden === 1 && tutorEmail) {
           await tx.workflowAsignacion.create({
             data: {
@@ -121,9 +112,7 @@ export async function POST(req: NextRequest) {
           })
         }
 
-        // Profesores (etapa 2)
         if (etapa.orden === 2 && profesoresEmails.length > 0) {
-
           const profesoresFiltrados = profesoresEmails.filter(
             (email: string) => email !== tutorEmail
           )
@@ -175,13 +164,32 @@ export async function GET(req: NextRequest) {
       if (!token.email) {
         return NextResponse.json({ error: `El ${token.role.toLowerCase()} no tiene un correo válido registrado en la sesión` }, { status: 400 })
       }
-      queryWhere = {
-        workflowInstancia: {
-          etapasInstancia: {
-            some: {
-              asignaciones: {
-                some: {
-                  email: token.email
+
+      if (token.role === "DOCENTE") {
+        queryWhere = {
+          workflowInstancia: {
+            etapasInstancia: {
+              some: {
+                orden: 2,
+                estado: "EN_PROCESO",
+                asignaciones: {
+                  some: {
+                    email: token.email
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else {
+        queryWhere = {
+          workflowInstancia: {
+            etapasInstancia: {
+              some: {
+                asignaciones: {
+                  some: {
+                    email: token.email
+                  }
                 }
               }
             }
