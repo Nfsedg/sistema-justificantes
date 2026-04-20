@@ -167,6 +167,7 @@ export function DashboardStaff() {
             title="Justificantes Pendientes"
             description="Justificantes que están en proceso de evaluación"
             onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            onActionSuccess={fetchJustificantes}
             userEmail={user?.email ?? ""}
             userRole={user?.role ?? ""}
           />
@@ -179,6 +180,7 @@ export function DashboardStaff() {
             title="Historial de Justificantes"
             description="Todos los justificantes asignados"
             onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            onActionSuccess={fetchJustificantes}
             userEmail={user?.email ?? ""}
             userRole={user?.role ?? ""}
           />
@@ -191,6 +193,7 @@ export function DashboardStaff() {
             title="Justificantes Rechazados"
             description="Justificantes que has rechazado"
             onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            onActionSuccess={fetchJustificantes}
             userEmail={user?.email ?? ""}
             userRole={user?.role ?? ""}
           />
@@ -203,6 +206,7 @@ export function DashboardStaff() {
             title="Justificantes Aprobados"
             description="Justificantes que has aprobado exitosamente"
             onViewDetails={(j) => { setSelectedJustificante(j); setIsEvaluarOpen(true); }}
+            onActionSuccess={fetchJustificantes}
             userEmail={user?.email ?? ""}
             userRole={user?.role ?? ""}
           />

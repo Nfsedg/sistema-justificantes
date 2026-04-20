@@ -147,8 +147,8 @@ export function JustificanteDetalle({
                               </h4>
                             </div>
                             <span className={`text-xs px-2 py-0.5 rounded-full border ${etapa.estado === "COMPLETADA" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50" :
-                                etapa.estado === "EN_PROCESO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/50" :
-                                  "bg-muted text-muted-foreground"
+                              etapa.estado === "EN_PROCESO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/50" :
+                                "bg-muted text-muted-foreground"
                               }`}>
                               {isBloqueada ? "Pendiente" : traducirStatus(etapa.estado)}
                             </span>
@@ -200,9 +200,6 @@ export function JustificanteDetalle({
                 Editar Justificante
               </Button>
             )}
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cerrar
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -210,13 +207,13 @@ export function JustificanteDetalle({
       {/* Editing Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-0">
-          <JustificanteForm 
-            initialData={justificante} 
+          <JustificanteForm
+            initialData={justificante}
             onSuccess={() => {
               setIsEditing(false);
               setIsOpen(false);
               if (onRefresh) onRefresh();
-            }} 
+            }}
           />
         </DialogContent>
       </Dialog>

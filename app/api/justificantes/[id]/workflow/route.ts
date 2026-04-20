@@ -51,8 +51,15 @@ export async function POST(
       return NextResponse.json({ error: "Justificante o Workflow no encontrado" }, { status: 404 });
     }
 
-    // 2️⃣ Encontrar la etapa activa (EN_PROCESO)
-    const etapaActiva = justificante.workflowInstancia.etapasInstancia.find(e => e.estado === "EN_PROCESO");
+    // 2️⃣ Encontrar la etapa activa (EN_PROCESO) o la etapa donde el usuario rechazó el justificante
+    let etapaActiva = justificante.workflowInstancia.etapasInstancia.find(e => e.estado === "EN_PROCESO");
+    
+    if (!etapaActiva) {
+      // Si no hay etapa en proceso, buscamos si el usuario tiene un rechazo en una etapa completada
+      etapaActiva = justificante.workflowInstancia.etapasInstancia.find(e => 
+        e.asignaciones.some(a => a.email === token.email && a.estado === "RECHAZADO")
+      );
+    }
     
     if (!etapaActiva) {
       return NextResponse.json({ error: "No hay ninguna etapa de evaluación activa para este justificante" }, { status: 400 });
@@ -66,10 +73,32 @@ export async function POST(
     }
 
     if (asignacionUsuario.estado !== "PENDIENTE") {
-      return NextResponse.json({ error: "Ya has evaluado este justificante" }, { status: 400 });
+      // Permitir cambiar de RECHAZADO a APROBAR
+      if (!(asignacionUsuario.estado === "RECHAZADO" && action === "APROBAR")) {
+        return NextResponse.json({ error: "Ya has evaluado este justificante y no puedes cambiar tu decisión" }, { status: 400 });
+      }
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      // Si estamos cambiando de RECHAZADO a APROBAR, necesitamos asegurarnos de que la etapa y el justificante estén activos
+      if (asignacionUsuario.estado === "RECHAZADO" && action === "APROBAR") {
+        // Reactivar etapa si estaba completada
+        if (etapaActiva.estado === "COMPLETADA") {
+          await tx.workflowEtapaInstancia.update({
+            where: { id: etapaActiva.id },
+            data: { estado: "EN_PROCESO", completadaEn: null }
+          });
+        }
+        
+        // Reactivar justificante si estaba en CON_OBSERVACIONES
+        if (justificante.status === JustificanteStatus.CON_OBSERVACIONES) {
+          await tx.justificantes.update({
+            where: { id: justificanteId },
+            data: { status: JustificanteStatus.EN_PROCESO }
+          });
+        }
+      }
+
       // 4️⃣ Registrar la respuesta
       const estadoRevision: EstadoRevision = action === "APROBAR" ? "APROBADO" : "RECHAZADO";
       

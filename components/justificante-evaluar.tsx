@@ -9,6 +9,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -38,15 +48,24 @@ export function JustificanteEvaluar({
   // Consideramos si esta asignación ya está completada o si sigue en proceso
   // En base a la etapa actual
   const { workflowInstancia } = justificante;
-  const etapaActiva = workflowInstancia?.etapasInstancia?.find(
+  let etapaActiva = workflowInstancia?.etapasInstancia?.find(
     (e: any) => e.estado === "EN_PROCESO"
   );
+
+  // Si no hay etapa en proceso, buscamos si el usuario tiene un rechazo en una etapa ya completada (debido a su rechazo)
+  if (!etapaActiva) {
+    etapaActiva = workflowInstancia?.etapasInstancia?.find((e: any) =>
+      e.asignaciones?.some((a: any) => a.email === user?.email && a.estado === "RECHAZADO")
+    );
+  }
 
   const asignacionUsuario = etapaActiva?.asignaciones?.find(
     (a: any) => a.email === user?.email
   );
 
   const canEvaluate = !!asignacionUsuario && asignacionUsuario.estado === "PENDIENTE";
+  const isRejected = !!asignacionUsuario && asignacionUsuario.estado === "RECHAZADO";
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleEvaluate = async (action: "APROBAR" | "RECHAZAR") => {
     try {
@@ -144,7 +163,7 @@ export function JustificanteEvaluar({
               </a>
             </div>
 
-            {canEvaluate ? (
+            {canEvaluate && (
               <div className="space-y-2 mt-2">
                 <Label htmlFor="observaciones">Observaciones (Opcional)</Label>
                 <Textarea
@@ -154,30 +173,18 @@ export function JustificanteEvaluar({
                   onChange={(e) => setObservaciones(e.target.value)}
                 />
               </div>
-            ) : (
-              <div className="p-3 bg-blue-50/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-md text-sm mt-2 border border-blue-100 dark:border-blue-800">
-                <p className="font-medium mb-1">Estado de evaluación</p>
-                {!etapaActiva
-                  ? "Este justificante no tiene ninguna etapa de evaluación activa."
-                  : !asignacionUsuario
-                    ? "No estás asignado para evaluar en esta etapa."
-                    : `Ya has evaluado este justificante (${asignacionUsuario.estado}).`}
-              </div>
             )}
           </TabsContent>
 
           <TabsContent value="oficio" className="py-4">
-            <JustificanteOficio 
-              justificante={justificante} 
-              tutorName={tutorName} 
+            <JustificanteOficio
+              justificante={justificante}
+              tutorName={tutorName}
             />
           </TabsContent>
         </Tabs>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          {/* <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cerrar
-          </Button> */}
 
           {canEvaluate && (
             <div className="flex gap-2">
@@ -207,7 +214,44 @@ export function JustificanteEvaluar({
               </Button>
             </div>
           )}
+
+          {isRejected && (
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={loadingAction !== null}
+              onClick={() => setIsConfirmOpen(true)}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Cambiar a Aprobado
+            </Button>
+          )}
         </DialogFooter>
+
+        <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Confirmar cambio de decisión?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Estás a punto de cambiar tu decisión de <strong>Rechazado</strong> a <strong>Aprobado</strong>.
+                Esta acción reactivará el proceso de validación para el estudiante.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={loadingAction !== null}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleEvaluate("APROBAR");
+                  setIsConfirmOpen(false);
+                }}
+                disabled={loadingAction !== null}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {loadingAction ? "Procesando..." : "Sí, Cambiar a Aprobado"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

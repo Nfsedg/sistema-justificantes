@@ -31,6 +31,7 @@ interface JustificantesListProps {
   onViewDetails?: (justificante: Justificante) => void;
   userEmail?: string;
   userRole?: string;
+  onActionSuccess?: () => void;
 }
 
 function EstatusBadge({
@@ -122,6 +123,7 @@ export function JustificantesList({
   onViewDetails,
   userEmail,
   userRole,
+  onActionSuccess,
 }: JustificantesListProps) {
   const [search, setSearch] = useState("");
 
